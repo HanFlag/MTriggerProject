@@ -74,5 +74,5 @@ Plugins/**/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 
-.idea
-Content/ParagonGideon
+*.idea
+Content/ParagonGideon/*
