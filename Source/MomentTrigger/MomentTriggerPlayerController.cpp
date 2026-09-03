@@ -127,12 +127,13 @@ void AMomentTriggerPlayerController::MouseLockTrigger()
 		
 		if (GetHitResultUnderCursor(ECC_Visibility, false, HitResult))
 		{
+			FRotator PlayerRotation = ControlledPawn->GetActorRotation();
 			//캐릭터 위치에서 커서 포인트 까지 회전값 계산
 			FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(ControlledPawn->GetActorLocation(), HitResult.ImpactPoint);
 			// Yaw만 적용 -> 플레이어의 메쉬와 방향 확인하기
 			FRotator NewRotation = FRotator(0.0f, TargetRotation.Yaw, 0.0f);
 			//부드러운 플레이어의 회전 보간
-			FRotator PlayerMouseLook = FMath::RInterpTo(NewRotation,TargetRotation,GetWorld()->TimeSeconds(),0.1f);
+			FRotator PlayerMouseLook = FMath::RInterpTo(PlayerRotation,NewRotation,GetWorld()->GetDeltaSeconds(),12.0f);
 			ControlledPawn->SetActorRotation(PlayerMouseLook);
 		}
 	}
