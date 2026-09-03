@@ -38,5 +38,13 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movment")
+	float JogSpeed = 400.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movment")
+	float SprintSpeed = 600.0f;
+	
+	void SetSprint(bool bEnable);
+	
+	
 };

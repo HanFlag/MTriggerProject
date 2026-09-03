@@ -60,7 +60,6 @@ void AMomentTriggerCharacter::BeginPlay()
 void AMomentTriggerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -69,4 +68,13 @@ void AMomentTriggerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
+
+void AMomentTriggerCharacter::SetSprint(bool bEnable)
+{
+	GetCharacterMovement()->MaxWalkSpeed = bEnable ? SprintSpeed : JogSpeed;
+}
+
+
+
+
 

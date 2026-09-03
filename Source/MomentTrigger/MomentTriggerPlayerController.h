@@ -44,11 +44,12 @@ protected:
 	
 	
 	void Move(const FInputActionValue& Value);
-	void Sprint();
+	void OnSprint();
+	void EndSprint();
+	bool bIsSprintState = false;
 	
 	void MouseLockTrigger();
 	void MouseLockComplated();
-
 	
 public:
 	bool bIsMouseLockPressed = false;

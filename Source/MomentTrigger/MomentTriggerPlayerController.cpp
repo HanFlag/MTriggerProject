@@ -41,7 +41,8 @@ void AMomentTriggerPlayerController::SetupInputComponent()
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMomentTriggerPlayerController::Move);
 		EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Triggered, this, &AMomentTriggerPlayerController::MouseLockTrigger);EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::MouseLockComplated);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AMomentTriggerPlayerController::Sprint);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AMomentTriggerPlayerController::OnSprint);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::EndSprint);
 	}
 		
 }
@@ -84,15 +85,24 @@ void AMomentTriggerPlayerController::Move(const FInputActionValue& Value)
 	}
 }
 
-void AMomentTriggerPlayerController::Sprint()
+void AMomentTriggerPlayerController::OnSprint()
 {
-	
-	if (AMomentTriggerCharacter* SprintSpeed = Cast<AMomentTriggerCharacter>(GetPawn()))
+	bIsSprintState = true;
+	if (AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn()))
 	{
-		SprintSpeed->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+		TargetCharacter->SetSprint(bIsSprintState);
 	}
-	
 }
+
+void AMomentTriggerPlayerController::EndSprint()
+{
+	bIsSprintState = false;
+	if (AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn()))
+	{
+		TargetCharacter->SetSprint(bIsSprintState);
+	}
+}
+
 
 void AMomentTriggerPlayerController::MouseLockTrigger()
 {
@@ -113,7 +123,6 @@ void AMomentTriggerPlayerController::MouseLockTrigger()
 			//캐릭터 위치에서 커서 포인트 까지 회전값 계산
 			FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(ControlledPawn->GetActorLocation(), HitResult.ImpactPoint);
 			// Yaw만 적용 -> 플레이어의 메쉬와 방향 확인하기
-			UE_LOG(LogTemp, Display, TEXT("Yaw : %f"), TargetRotation.Yaw);
 			FRotator NewRotation = FRotator(0.0f, TargetRotation.Yaw, 0.0f);
 			ControlledPawn->SetActorRotation(NewRotation);
 		}
@@ -127,5 +136,3 @@ void AMomentTriggerPlayerController::MouseLockComplated()
 		TargetCharacter->GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 }
-
-
