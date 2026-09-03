@@ -60,6 +60,21 @@ void AMomentTriggerCharacter::BeginPlay()
 void AMomentTriggerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	//애니메이션과 속도가 부드럽게 연출하기위해 감속하는 속도 구현
+	//그런데 블루프린트에 감속도가 있는데 왜 쓰질 않는가?
+	//내가 코드로 스프린트 끝마칠때 속도가 300으로 지정되기때문
+	if (bIsDecelerationActive)
+	{
+		float CurrentMaxSpeed = GetCharacterMovement()->MaxWalkSpeed;
+		
+		float NewMaxSpeed = FMath::FInterpTo(CurrentMaxSpeed, JogSpeed, DeltaTime, SpeedInterp);
+		GetCharacterMovement()->MaxWalkSpeed = NewMaxSpeed;
+		if (GetCharacterMovement()->MaxWalkSpeed <= JogSpeed)
+		{
+			GetCharacterMovement()->MaxWalkSpeed = JogSpeed;
+			bIsDecelerationActive = false;
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -68,10 +83,20 @@ void AMomentTriggerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
-//컨트롤러의 Sprint상태에 맞게 캐릭터 MovementSpeed에 동기화
+//컨트롤러의 Sprint상태에 맞게 캐릭터 MovementSpeed에 동기화 -- 주석처리
+//감속 할지 안할지 상태 지정
 void AMomentTriggerCharacter::SetSprint(bool bEnable)
 {
-	GetCharacterMovement()->MaxWalkSpeed = bEnable ? SprintSpeed : JogSpeed;
+	if (bEnable)
+	{
+	// GetCharacterMovement()->MaxWalkSpeed = bEnable ? SprintSpeed : JogSpeed;
+		bIsDecelerationActive = false;
+		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+	}
+	else
+	{
+		bIsDecelerationActive = true;
+	}
 }
 
 

@@ -72,11 +72,12 @@ void AMomentTriggerPlayerController::Move(const FInputActionValue& Value)
 				// 스프링 암 컴포넌트의 회전값 Yaw를 추출
 				FRotator SpringArmRotator = TargetCharacter->SpringArmComp->GetComponentRotation();
 				FRotator YawRotation(0.0f, SpringArmRotator.Yaw, 0.0f);
-
+				
 
 				// 스프링암 기준으로 벡터 계산
 				const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 				const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+				
 				//AddMovementInput
 				ControlledPawn->AddMovementInput(ForwardDirection, MovementVector.X);
 				ControlledPawn->AddMovementInput(RightDirection, MovementVector.Y);

@@ -39,12 +39,16 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movment")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float JogSpeed = 400.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movment")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SprintSpeed = 600.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float SpeedInterp = 8.0f;
 	
 	void SetSprint(bool bEnable);
 	
+private:
+	bool bIsDecelerationActive = false;
 	
 };
