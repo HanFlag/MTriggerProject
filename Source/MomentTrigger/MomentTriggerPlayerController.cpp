@@ -41,7 +41,7 @@ void AMomentTriggerPlayerController::SetupInputComponent()
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMomentTriggerPlayerController::Move);
 		EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Triggered, this, &AMomentTriggerPlayerController::MouseLockTrigger);EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::MouseLockComplated);
-		
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AMomentTriggerPlayerController::Sprint);
 	}
 		
 }
@@ -82,6 +82,16 @@ void AMomentTriggerPlayerController::Move(const FInputActionValue& Value)
 			}
 		}
 	}
+}
+
+void AMomentTriggerPlayerController::Sprint()
+{
+	
+	if (AMomentTriggerCharacter* SprintSpeed = Cast<AMomentTriggerCharacter>(GetPawn()))
+	{
+		SprintSpeed->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+	}
+	
 }
 
 void AMomentTriggerPlayerController::MouseLockTrigger()

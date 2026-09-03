@@ -39,8 +39,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* MouseLock;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* SprintAction;
+	
 	
 	void Move(const FInputActionValue& Value);
+	void Sprint();
 	
 	void MouseLockTrigger();
 	void MouseLockComplated();

@@ -30,15 +30,14 @@ AMomentTriggerCharacter::AMomentTriggerCharacter()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
 	
-	//이동방향 자동회전 설정
-	GetCharacterMovement()->bOrientRotationToMovement = false;
+	
 	
 	//컨트롤러의 회전 적용 설정
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-
+	//이동방향 자동회전 설정
+	// GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
 // Called when the game starts or when spawned
