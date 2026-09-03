@@ -44,11 +44,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SprintSpeed = 600.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float SpeedInterp = 8.0f;
+	float SpeedInterp = 3.0f;
 	
 	void SetSprint(bool bEnable);
+
+	void SetMouseLookState(bool bIsMouseLooking);
+	void RotateToTargetLocation(const FVector& TargetLocation);
 	
 private:
 	bool bIsDecelerationActive = false;
-	
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float RotationInterpSpeed = 12.0f;
 };

@@ -10,6 +10,7 @@
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AMomentTriggerCharacter::AMomentTriggerCharacter()
@@ -36,6 +37,8 @@ AMomentTriggerCharacter::AMomentTriggerCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+	// 컨트롤러 선호 회전 해제 (우클릭 커서 바라보기에 회전 보간이 적용되게)
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	//이동방향 자동회전 설정
 	// GetCharacterMovement()->bOrientRotationToMovement = true;
 }
@@ -101,5 +104,65 @@ void AMomentTriggerCharacter::SetSprint(bool bEnable)
 
 
 
+void AMomentTriggerCharacter::SetMouseLookState(bool bIsMouseLooking)
+{
+	// 우클릭 중일 때는 이동 방향 회전을 끄고, 떼면 다시 켬
+	GetCharacterMovement()->bOrientRotationToMovement = !bIsMouseLooking;
+}
 
+void AMomentTriggerCharacter::RotateToTargetLocation(const FVector& TargetLocation)
+{
+
+	FVector PlayerLocation = GetActorLocation();
+	FVector TargetWithCharacterZ = FVector(TargetLocation.X, TargetLocation.Y, PlayerLocation.Z);
+	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, TargetWithCharacterZ);
+	// FRotator CurrentRotation = FRotator(0.0f, GetActorRotation().Yaw, 0.0f);
+	FRotator CurrentRotation = GetActorRotation();
+	// 회전 보간 계산 및 적용 (Character 본인의 몫)
+	FRotator SmoothedRotation = FMath::RInterpTo(
+	CurrentRotation,
+	TargetRotation,
+	GetWorld()->GetDeltaSeconds(),
+	RotationInterpSpeed);
+	UE_LOG(LogTemp , Warning , TEXT("SmoothedRotation : %f"), SmoothedRotation.Yaw)
+	
+	SetActorRotation(SmoothedRotation);
+
+}
+
+// void AMomentTriggerCharacter::RotateToTargetLocation(const FVector& TargetLocation)
+// {
+// 	FVector PlayerLocation = GetActorLocation();
+// 	
+// 	
+// 	FVector TargetWithCharacterZ = FVector(TargetLocation.X, TargetLocation.Y, PlayerLocation.Z);
+// 	
+// 	//마우스가 너무 가까우면 확확 회전하는거 생략
+// 	if (FVector::DistSquared2D(PlayerLocation, TargetWithCharacterZ) < 100.0f)
+// 	{
+// 		return;
+// 	}
+// 	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, TargetWithCharacterZ);
+// 	float CurrentYaw = GetActorRotation().Yaw;
+// 	
+// 	float DeltaYaw = FMath::FindDeltaAngleDegrees(CurrentYaw, TargetRotation.Yaw);
+// 	float NewYaw = CurrentYaw + (DeltaYaw * GetWorld()->GetDeltaSeconds() * RotationInterpSpeed);
+// 	// FRotator CurrentRotation = FRotator(0.0f, GetActorRotation().Yaw, 0.0f);
+// 	
+// 	// FRotator CurrentRotation = GetActorRotation();
+// 	// // 회전 보간 계산 및 적용 (Character 본인의 몫)
+// 	// FRotator SmoothedRotation = FMath::RInterpTo(
+// 	// 	CurrentRotation,
+// 	// 	TargetRotation,
+// 	// 	GetWorld()->GetDeltaSeconds(),
+// 	// 	RotationInterpSpeed);	
+// 	UE_LOG(LogTemp , Warning , TEXT("SmoothedRotation : %f"), NewYaw)
+// 	SetActorRotation(FRotator(0.0f, NewYaw, 0.0f));
+// }
+
+//캐릭터 의 컨트롤중인 폰 캐스트 -> lock 트리거 동안 회전보간 끄기
+//우클릭시 마우스 회전벡터 로 캐릭터 방향 바라보기 기능
+//캐릭터 위치에서 커서 포인트 까지 회전값 계산
+// Yaw만 적용 -> 플레이어의 메쉬와 방향 확인하기
+//부드러운 플레이어의 회전 보간
 

@@ -50,8 +50,9 @@ protected:
 	void Jump();
 	void OnSprint();
 	void EndSprint();
-	bool bIsSprintState = false;
 	
+	
+	void MouseLockStarted();
 	void MouseLockTrigger();
 	void MouseLockComplated();
 	
