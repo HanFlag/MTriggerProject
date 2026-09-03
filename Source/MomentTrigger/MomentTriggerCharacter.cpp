@@ -68,7 +68,7 @@ void AMomentTriggerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
-
+//컨트롤러의 Sprint상태에 맞게 캐릭터 MovementSpeed에 동기화
 void AMomentTriggerCharacter::SetSprint(bool bEnable)
 {
 	GetCharacterMovement()->MaxWalkSpeed = bEnable ? SprintSpeed : JogSpeed;

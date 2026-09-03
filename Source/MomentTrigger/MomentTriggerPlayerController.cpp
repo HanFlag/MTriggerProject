@@ -42,7 +42,7 @@ void AMomentTriggerPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMomentTriggerPlayerController::Move);
 		EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Triggered, this, &AMomentTriggerPlayerController::MouseLockTrigger);EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::MouseLockComplated);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AMomentTriggerPlayerController::OnSprint);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::EndSprint);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::EndSprint);EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AMomentTriggerPlayerController::Jump);
 	}
 		
 }
@@ -85,6 +85,13 @@ void AMomentTriggerPlayerController::Move(const FInputActionValue& Value)
 	}
 }
 
+void AMomentTriggerPlayerController::Jump()
+{
+	
+}
+
+//점프상태를 적용해 MomentTriggerCharacter의 SetSprint에전파
+
 void AMomentTriggerPlayerController::OnSprint()
 {
 	bIsSprintState = true;
@@ -124,7 +131,9 @@ void AMomentTriggerPlayerController::MouseLockTrigger()
 			FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(ControlledPawn->GetActorLocation(), HitResult.ImpactPoint);
 			// Yaw만 적용 -> 플레이어의 메쉬와 방향 확인하기
 			FRotator NewRotation = FRotator(0.0f, TargetRotation.Yaw, 0.0f);
-			ControlledPawn->SetActorRotation(NewRotation);
+			//부드러운 플레이어의 회전 보간
+			FRotator PlayerMouseLook = FMath::RInterpTo(NewRotation,TargetRotation,GetWorld()->TimeSeconds(),0.1f);
+			ControlledPawn->SetActorRotation(PlayerMouseLook);
 		}
 	}
 }
