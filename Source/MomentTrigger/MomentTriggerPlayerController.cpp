@@ -45,7 +45,6 @@ void AMomentTriggerPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::MouseLockComplated);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AMomentTriggerPlayerController::OnSprint);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::EndSprint);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AMomentTriggerPlayerController::Jump);
 	}
 		
 }
@@ -89,10 +88,7 @@ void AMomentTriggerPlayerController::Move(const FInputActionValue& Value)
 	}
 }
 
-void AMomentTriggerPlayerController::Jump()
-{
-	
-}
+
 
 //점프상태를 적용해 MomentTriggerCharacter의 SetSprint에전파
 

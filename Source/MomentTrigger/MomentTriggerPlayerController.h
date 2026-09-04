@@ -42,12 +42,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* SprintAction;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	UInputAction* JumpAction;
 	
 	
 	void Move(const FInputActionValue& Value);
-	void Jump();
 	void OnSprint();
 	void EndSprint();
 	
