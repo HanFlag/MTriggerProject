@@ -3,16 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "AbilitySystemComponent.h"
 #include "MomentTriggerCharacter.generated.h"
 
 struct FInputActionValue;
 class UInputAction;
 
 UCLASS()
-class MOMENTTRIGGER_API AMomentTriggerCharacter : public ACharacter
+class MOMENTTRIGGER_API AMomentTriggerCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -29,7 +31,10 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	// 컨트롤러에 의해 소환된 적 AI에 적용되는것 시스템 구성 요소 초기화 전용
+	virtual void PossessedBy(AController* NewController) override;
+	//플레이어가 복제되는 시점 능력 시스템 구성 요소 초기화 전용
+	virtual void OnRep_PlayerState() override;
 
 public:	
 	// Called every frame
@@ -46,10 +51,23 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SpeedInterp = 3.0f;
 	
+	// 어빌리티 콤프 정의
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
+	class UAbilitySystemComponent* AbilitySystemComp;
+	
 	void SetSprint(bool bEnable);
 
 	void SetMouseLookState(bool bIsMouseLooking);
-	void RotateToTargetLocation(const FVector& TargetLocation);
+	auto RotateToTargetLocation(const FVector& TargetLocation) -> void;
+	
+	virtual  UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
+	
+ 	protected:
+	// 어빌리티 시스템 복제 모드가 최소한이면 AI에게 적합 멀티플레이에 적합한 캐릭터의 복제 모드는 Mixed가 적합
+	// 따라서 블루프린트 내에서 수정할 수 있게 UPROPERTY를 설정
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilitySystem")
+	EGameplayEffectReplicationMode AscReplicationMode = EGameplayEffectReplicationMode::Mixed;
 	
 private:
 	bool bIsDecelerationActive = false;
