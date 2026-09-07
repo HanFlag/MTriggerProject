@@ -86,4 +86,8 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
 	class UMomentTriggerAttributeSet* AttributeSet;
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Karakuri")
+	class UKarakuriPlacementComponent* KarakuriPlacementComp;
 };

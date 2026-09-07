@@ -7,6 +7,7 @@
 
 
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Test)
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Cooldown_Ability_Test)
 /**
  * 
  */

@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "MomentTriggerCharacter.h"
+#include "KarakuriPlacementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 
@@ -116,8 +117,12 @@ void AMomentTriggerPlayerController::MouseLockStarted()
 	if (TargetCharacter)
 	{
 		TargetCharacter->SetMouseLookState(true);
+		if (TargetCharacter->KarakuriPlacementComp)
+		{
+			TargetCharacter->KarakuriPlacementComp->BeginPlacementPreview();
+		}
 	}
-		
+
 }
 
 
@@ -153,9 +158,13 @@ void AMomentTriggerPlayerController::MouseLockTrigger()
 		if (GetHitResultUnderCursor(ECC_Visibility, false, HitResult))
 		{
 			TargetCharacter->RotateToTargetLocation(HitResult.ImpactPoint);
+			if (TargetCharacter->KarakuriPlacementComp)
+			{
+				TargetCharacter->KarakuriPlacementComp->UpdatePlacementPreview();
+			}
 		}
 	}
-	
+
 }
 // 우클릭 뗄시 다시 캐릭터 이동에 회전 보간
 void AMomentTriggerPlayerController::MouseLockComplated()
@@ -164,5 +173,9 @@ void AMomentTriggerPlayerController::MouseLockComplated()
 	{
 		TargetCharacter->SetMouseLookState(false);
 		// TargetCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
+		if (TargetCharacter->KarakuriPlacementComp)
+		{
+			TargetCharacter->KarakuriPlacementComp->EndPlacementPreview();
+		}
 	}
 }

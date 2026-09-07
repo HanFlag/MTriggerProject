@@ -5,20 +5,22 @@
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
 #include "MomentTriggerGameplayTags.h"
-#include "UGA_TestAbility.generated.h"
+#include "GA_TestAbility.generated.h"
 
 
 /**
  * 
  */
 UCLASS()
-class MOMENTTRIGGER_API UUGA_TestAbility : public UGameplayAbility
+class MOMENTTRIGGER_API UGA_TestAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
 	
-	UUGA_TestAbility();
+	UGA_TestAbility();
 	
 public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-	
+
+	UPROPERTY()
+	TSubclassOf<class UGameplayEffect> TestDamageEffectClass;
 };

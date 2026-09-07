@@ -12,6 +12,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "MomentTriggerAttributeSet.h"
+#include "KarakuriPlacementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -51,6 +52,8 @@ AMomentTriggerCharacter::AMomentTriggerCharacter()
 	AbilitySystemComp->SetReplicationMode(AscReplicationMode);
 	//AbilitySystemComp->InitAbilityActorInfo(this,this);
 	AttributeSet = CreateDefaultSubobject<UMomentTriggerAttributeSet>(TEXT("AttributeSet"));
+
+	KarakuriPlacementComp = CreateDefaultSubobject<UKarakuriPlacementComponent>(TEXT("KarakuriPlacementComp"));
 }
 
 // Called when the game starts or when spawned
