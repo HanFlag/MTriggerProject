@@ -3,9 +3,12 @@
 
 #include "GA_TestAbility.h"
 
+#include "BaseKarakuriActor.h"
 #include "GE_Cooldown_TestAbility.h"
 #include "GE_TestDamage.h"
+#include "KarakuriPlacementComponent.h"
 #include "MomentTriggerAttributeSet.h"
+#include "MomentTriggerCharacter.h"
 
 UGA_TestAbility::UGA_TestAbility()
 {
@@ -21,7 +24,6 @@ void UGA_TestAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                        const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -30,7 +32,7 @@ void UGA_TestAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
 	const UMomentTriggerAttributeSet* AttributeSet = ASC ? ASC->GetSet<UMomentTriggerAttributeSet>() : nullptr;
-
+	
 	if (AttributeSet)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Health Before: %f"), AttributeSet->GetHealth());
@@ -50,5 +52,11 @@ void UGA_TestAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		}
 		
 	}
+	AMomentTriggerCharacter* SpawnKarakuri = Cast<AMomentTriggerCharacter>(ActorInfo->AvatarActor.Get());
+	if (SpawnKarakuri)
+	{
+		SpawnKarakuri->KarakuriPlacementComp->SpawnKarakuriActor();
+	}
+	
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

@@ -3,6 +3,7 @@
 
 #include "MomentTriggerCharacter.h"
 
+#include "BaseKarakuriActor.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -11,6 +12,7 @@
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "KarakuriGhostActor.h"
 #include "MomentTriggerAttributeSet.h"
 #include "KarakuriPlacementComponent.h"
 #include "Kismet/KismetMathLibrary.h"

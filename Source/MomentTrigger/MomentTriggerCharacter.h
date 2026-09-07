@@ -27,6 +27,8 @@ public:
 	
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp;
+	
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -35,6 +37,8 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	//플레이어가 복제되는 시점 능력 시스템 구성 요소 초기화 전용
 	virtual void OnRep_PlayerState() override;
+	
+	
 	
 	
 public:	
@@ -70,7 +74,7 @@ public:
 	void TestActivateAbility();
 	
 	virtual  UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	
+
 	
  	protected:
 	// 어빌리티 시스템 복제 모드가 최소한이면 AI에게 적합 멀티플레이에 적합한 캐릭터의 복제 모드는 Mixed가 적합
@@ -86,6 +90,7 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
 	class UMomentTriggerAttributeSet* AttributeSet;
+	
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Karakuri")
