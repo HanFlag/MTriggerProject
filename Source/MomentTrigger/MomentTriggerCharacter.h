@@ -35,7 +35,8 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	//플레이어가 복제되는 시점 능력 시스템 구성 요소 초기화 전용
 	virtual void OnRep_PlayerState() override;
-
+	
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -51,14 +52,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SpeedInterp = 3.0f;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* TestAbilityAction;
+
+	
 	// 어빌리티 콤프 정의
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
-	class UAbilitySystemComponent* AbilitySystemComp;
+	UAbilitySystemComponent* AbilitySystemComp;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
+	TSubclassOf<UGameplayAbility> TestAbilityClass;
 	
 	void SetSprint(bool bEnable);
 
 	void SetMouseLookState(bool bIsMouseLooking);
-	auto RotateToTargetLocation(const FVector& TargetLocation) -> void;
+	void RotateToTargetLocation(const FVector& TargetLocation);
+	void TestActivateAbility();
 	
 	virtual  UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
@@ -74,4 +83,7 @@ private:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float RotationInterpSpeed = 12.0f;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
+	class UMomentTriggerAttributeSet* AttributeSet;
 };

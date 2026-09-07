@@ -3,7 +3,6 @@
 
 #include "MomentTriggerCharacter.h"
 
-#include "AbilitySystemComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -12,6 +11,7 @@
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "MomentTriggerAttributeSet.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -47,9 +47,10 @@ AMomentTriggerCharacter::AMomentTriggerCharacter()
 	// 어빌리티 시스템 컴포넌트 추가
 	AbilitySystemComp = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComp->SetIsReplicated(true);
-	AbilitySystemComp->SetReplicationMode(AscReplicationMode);
 	//소유자 액터와 아바타 액터의 능력 시스템 구성 요소 초기화
+	AbilitySystemComp->SetReplicationMode(AscReplicationMode);
 	//AbilitySystemComp->InitAbilityActorInfo(this,this);
+	AttributeSet = CreateDefaultSubobject<UMomentTriggerAttributeSet>(TEXT("AttributeSet"));
 }
 
 // Called when the game starts or when spawned
@@ -62,10 +63,19 @@ void AMomentTriggerCharacter::BeginPlay()
 void AMomentTriggerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	
+
 	if (AbilitySystemComp)
 	{
+		
 		AbilitySystemComp->InitAbilityActorInfo(this, this);
+		if (TestAbilityClass)
+		{
+			AbilitySystemComp->GiveAbility(FGameplayAbilitySpec(TestAbilityClass,1,INDEX_NONE, this));
+		}
+		if (AttributeSet)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Health : %f"), AttributeSet->GetHealth());
+		}
 	}
 }
 
@@ -105,6 +115,10 @@ void AMomentTriggerCharacter::Tick(float DeltaTime)
 void AMomentTriggerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		EnhancedInputComponent->BindAction(TestAbilityAction,ETriggerEvent::Started,this,&AMomentTriggerCharacter::TestActivateAbility);
+	}
 
 }
 //컨트롤러의 Sprint상태에 맞게 캐릭터 MovementSpeed에 동기화 -- 주석처리
@@ -149,53 +163,23 @@ void AMomentTriggerCharacter::RotateToTargetLocation(const FVector& TargetLocati
 	GetWorld()->GetDeltaSeconds(),
 	RotationInterpSpeed);
 	UE_LOG(LogTemp , Warning , TEXT("SmoothedRotation : %f"), SmoothedRotation.Yaw)
-	
+	//액터 회전을 SmoothedRotation 회전보간으로 적용 !
 	SetActorRotation(SmoothedRotation);
 
 }
 
+void AMomentTriggerCharacter::TestActivateAbility()
+{
+	if (AbilitySystemComp)
+	{
+		AbilitySystemComp->TryActivateAbilityByClass(TestAbilityClass);
+	}
+}
+
+// 어빌리티 함수를 어빌리티comp 로
 UAbilitySystemComponent* AMomentTriggerCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComp;
 }
 
 
-/*
-// 객체지향 OOS를 준수하기위해 다시 새롭게 짠 코드로 인해 대체되기 전 코드들
-
- void AMomentTriggerCharacter::RotateToTargetLocation(const FVector& TargetLocation)
- {
- 	FVector PlayerLocation = GetActorLocation();
- 	
- 	
- 	FVector TargetWithCharacterZ = FVector(TargetLocation.X, TargetLocation.Y, PlayerLocation.Z);
- 	
- 	//마우스가 너무 가까우면 확확 회전하는거 생략
- 	if (FVector::DistSquared2D(PlayerLocation, TargetWithCharacterZ) < 100.0f)
- 	{
- 		return;
- 	}
- 	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, TargetWithCharacterZ);
- 	float CurrentYaw = GetActorRotation().Yaw;
- 	
- 	float DeltaYaw = FMath::FindDeltaAngleDegrees(CurrentYaw, TargetRotation.Yaw);
- 	float NewYaw = CurrentYaw + (DeltaYaw * GetWorld()->GetDeltaSeconds() * RotationInterpSpeed);
- 	// FRotator CurrentRotation = FRotator(0.0f, GetActorRotation().Yaw, 0.0f);
- 	
- 	// FRotator CurrentRotation = GetActorRotation();
- 	// // 회전 보간 계산 및 적용 (Character 본인의 몫)
- 	// FRotator SmoothedRotation = FMath::RInterpTo(
- 	// 	CurrentRotation,
- 	// 	TargetRotation,
- 	// 	GetWorld()->GetDeltaSeconds(),
- 	// 	RotationInterpSpeed);	
- 	UE_LOG(LogTemp , Warning , TEXT("SmoothedRotation : %f"), NewYaw)
- 	SetActorRotation(FRotator(0.0f, NewYaw, 0.0f));
- }
-
-캐릭터 의 컨트롤중인 폰 캐스트 -> lock 트리거 동안 회전보간 끄기
-우클릭시 마우스 회전벡터 로 캐릭터 방향 바라보기 기능
-캐릭터 위치에서 커서 포인트 까지 회전값 계산
- Yaw만 적용 -> 플레이어의 메쉬와 방향 확인하기
-부드러운 플레이어의 회전 보간
-*/
