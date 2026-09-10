@@ -24,7 +24,7 @@ public:
 	void BeginPlacementPreview();
 
 	// 우클릭 유지 중 매 틱 호출 - Owner(캐릭터) 위치/방향 기준으로 고스트 위치 갱신
-	void UpdatePlacementPreview();
+	void UpdatePlacementPreview(const FHitResult& CursorHit, bool bSnapOverride);
 
 	// 우클릭 뗄 때 호출
 	void EndPlacementPreview();
@@ -35,7 +35,7 @@ protected:
 	// 고스트로 스폰할 액터 클래스 (BP에서 메시 지정)
 	UPROPERTY(EditDefaultsOnly, Category = "Karakuri")
 	TSubclassOf<AKarakuriGhostActor> GhostActorClass;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Karakuri")
 	TSubclassOf<ABaseKarakuriActor> KarakuriClass;
 
@@ -47,10 +47,16 @@ protected:
 
 	// HitResult의 액터가 "KarakuriGround" 태그를 가진 설치 가능 표면인지 판정
 	bool IsBuildableSurface(const FHitResult& HitResult) const;
+	
+	// 토글 상태 기억 변수
+	bool bFreePlacementOverride = false;
 
 	// 회전을 8방향(45도 단위) 중 가장 가까운 값으로 스냅
-	FRotator SnapRotationToCardinal(const FRotator& InRotation) const;
+	FRotator SnapRotationToCardinal(const FRotator& ToCursor) const;
 	
+	ABaseKarakuriActor* FindNearestKarakuriAnchor(const FVector& PlayerLocation) const;
+	
+
 	// 락 여부
 	bool bIsSnapLocked = false;
 	// 락 앵커 위치
@@ -62,6 +68,6 @@ protected:
 	// 스폰 위치가 유효한지 확인
 	bool bIsValidSpawnLocation = false;
 public:
-	
+
 	void SpawnKarakuriActor();
 };

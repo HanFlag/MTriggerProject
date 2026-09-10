@@ -3,7 +3,10 @@
 
 #include "KarakuriPlacementComponent.h"
 
+#include <rapidjson/document.h>
+#include "EngineUtils.h"
 #include "KarakuriGhostActor.h"
+#include "VerseVM/VVMVerseEnum.h"
 
 
 UKarakuriPlacementComponent::UKarakuriPlacementComponent()
@@ -29,31 +32,37 @@ void UKarakuriPlacementComponent::BeginPlacementPreview()
 	}
 }
 
-void UKarakuriPlacementComponent::UpdatePlacementPreview()
+void UKarakuriPlacementComponent::UpdatePlacementPreview(const FHitResult& CursorHit, bool bSnapOverride)
 {
 	AActor* OwnerActor = GetOwner();
 	if (!GhostActor || !OwnerActor)
 	{
 		return;
 	}
-	float PlayerAtAnchorDist = FVector::Dist(OwnerActor->GetActorLocation(), LockedAnchorLocation);
-	if (PlayerAtAnchorDist < LockedAnchorRadius)
+	ABaseKarakuriActor* NearestKarakuri = FindNearestKarakuriAnchor(OwnerActor->GetActorLocation());
+	// 토글 기능 눌렸는지 기억, SpawnKarakuriActor에서 처리함
+	if (bSnapOverride)
 	{
-		bIsSnapLocked = true;
+		bFreePlacementOverride = !bFreePlacementOverride;
 	}
-	else
+	bIsSnapLocked = (NearestKarakuri != nullptr) && !bFreePlacementOverride;
+	if (bIsSnapLocked)
 	{
-		bIsSnapLocked = false;
+		LockedAnchorLocation = NearestKarakuri->GetActorLocation();
+		LockedAnchorRotation = NearestKarakuri->GetActorRotation();
 	}
+	
 	const FRotator SnappedRotation = SnapRotationToCardinal(OwnerActor->GetActorRotation());
 	if (!bIsSnapLocked)
 	{
+		// 배치될 방향과 위치 설정
 		const FVector CandidateLocation = OwnerActor->GetActorLocation() + SnappedRotation.Vector() * GridCellSize;
-
+		//배치 후 월드 좌표가 아닌 직접 그리드 좌표로 환산 후 적용
+		FVector CandidateLocationGridSnap = FVector(FMath::GridSnap(CandidateLocation.X, GridCellSize),FMath::GridSnap(CandidateLocation.Y, GridCellSize),CandidateLocation.Z);
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(OwnerActor);
-		const FVector TraceStart = CandidateLocation + FVector(0.0f, 0.0f, 200.0f);
-		const FVector TraceEnd = CandidateLocation - FVector(0.0f, 0.0f, 200.0f);
+		const FVector TraceStart = CandidateLocationGridSnap + FVector(0.0f, 0.0f, 200.0f);
+		const FVector TraceEnd = CandidateLocationGridSnap - FVector(0.0f, 0.0f, 200.0f);
 
 		FHitResult GroundHit;
 		const bool bHitGround = GetWorld()->LineTraceSingleByChannel(GroundHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
@@ -70,28 +79,77 @@ void UKarakuriPlacementComponent::UpdatePlacementPreview()
 	}
 	if (bIsSnapLocked)
 	{
-		const FVector CandidateLocation = LockedAnchorLocation;
+		// 커서가 정확히 뭘 맞췄는지가 아니라, 앵커에서 커서 지점까지의 "방향"만 봄
+		const FVector ToCursor = CursorHit.ImpactPoint - LockedAnchorLocation;
+		const float FlatDist = FVector(ToCursor.X, ToCursor.Y, 0.0f).Size();
+
+		// 커서가 앵커 바로 위/근처를 가리키면 위로, 아니면 그 방향으로 스냅
+		const float RelativeYaw = ToCursor.Rotation().Yaw - LockedAnchorRotation.Yaw;
+		const float SnappedRelativeYaw = FMath::RoundToFloat(RelativeYaw / 90.0f) * 90.0f;
+		// const FRotator OffsetDirection = (FRotator(0.0f, SnappedRelativeYaw + LockedAnchorRotation.Yaw, 0.0f));
+		const FVector OffsetVector = (FlatDist < GridCellSize * 0.5f) 
+		? FVector::ZeroVector : 
+		FRotator(0.0f, SnappedRelativeYaw + LockedAnchorRotation.Yaw, 0.0f).Vector();
+
+		const FVector HorizontalCandidate = LockedAnchorLocation + OffsetVector * GridCellSize;
 
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(OwnerActor);
-		const FVector TraceStart = CandidateLocation + FVector(0.0f, 0.0f, 200.0f);
-		const FVector TraceEnd = CandidateLocation - FVector(0.0f, 0.0f, 200.0f);
+		const FVector TraceStart = HorizontalCandidate + FVector(0.0f, 0.0f, 200.0f);
+		const FVector TraceEnd = HorizontalCandidate - FVector(0.0f, 0.0f, 200.0f);
 
-		FHitResult GroundHit;
-		const bool bHitGround = GetWorld()->LineTraceSingleByChannel(GroundHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
+		FHitResult SideGroundHit;
+		const bool bHitSideGround = GetWorld()->LineTraceSingleByChannel(SideGroundHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
 
-		if (!bHitGround || !IsBuildableSurface(GroundHit))
+		if (!bHitSideGround || !IsBuildableSurface(SideGroundHit))
 		{
 			GhostActor->SetGhostVisible(false);
 			bIsValidSpawnLocation = false;
 			return;
 		}
+
 		bIsValidSpawnLocation = true;
 		GhostActor->SetGhostVisible(true);
-		GhostActor->UpdateGhostTransform(GroundHit.ImpactPoint, LockedAnchorRotation);
+		GhostActor->UpdateGhostTransform(SideGroundHit.ImpactPoint, LockedAnchorRotation);
 	}
-	
-	
+	/*
+	if (bIsSnapLocked)
+	{
+		FVector CandidateLocation;
+		FRotator CandidateRotation = LockedAnchorRotation;
+		if (CursorHit.ImpactNormal.Z > 0.7f)
+		{
+			CandidateLocation = FVector(LockedAnchorLocation.X, LockedAnchorLocation.Y, CursorHit.ImpactPoint.Z);
+			CandidateRotation = LockedAnchorRotation;
+
+		}
+		else
+		{
+			const FRotator OffsetDirection = SnapRotationToCardinal(CursorHit.ImpactNormal.Rotation());
+			const FVector HorizontalCandidate = LockedAnchorLocation + OffsetDirection.Vector() * GridCellSize;
+
+			FCollisionQueryParams QueryParams;
+			QueryParams.AddIgnoredActor(OwnerActor);
+			const FVector TraceStart = HorizontalCandidate + FVector(0.0f, 0.0f, 200.0f);
+			const FVector TraceEnd = HorizontalCandidate - FVector(0.0f, 0.0f, 200.0f);
+
+			FHitResult SideGroundHit;
+			const bool bHitSideGround = GetWorld()->LineTraceSingleByChannel(SideGroundHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
+			if (!bHitSideGround || !IsBuildableSurface(SideGroundHit))
+			{
+				GhostActor->SetGhostVisible(false);
+				bIsValidSpawnLocation = false;
+				return;
+			}
+			CandidateLocation = SideGroundHit.ImpactPoint;
+		}
+
+		bIsValidSpawnLocation = true;
+		GhostActor->SetGhostVisible(true);
+		GhostActor->UpdateGhostTransform(CandidateLocation, CandidateRotation);
+	}
+	*/
+
 }
 
 void UKarakuriPlacementComponent::EndPlacementPreview()
@@ -115,6 +173,28 @@ FRotator UKarakuriPlacementComponent::SnapRotationToCardinal(const FRotator& InR
 	const float SnappedYaw = FMath::RoundToFloat(InRotation.Yaw / 45.0f) * 45.0f;
 	return FRotator(0.0f, SnappedYaw, 0.0f);
 }
+// null 이면 해당 한변 내에 카라쿠리 없음 null이 아니면 가까운 반경 내 카라쿠리 앵커 스냅 활성
+// 월드 내 카라쿠리 액터 순회
+ABaseKarakuriActor* UKarakuriPlacementComponent::FindNearestKarakuriAnchor(const FVector& PlayerLocation) const
+{
+	ABaseKarakuriActor* NearestKarakuri = nullptr;
+	float NearestDistSq = FMath::Square(LockedAnchorRadius);
+	
+	for (TActorIterator<ABaseKarakuriActor> It(GetWorld()); It; ++It)
+	{
+		ABaseKarakuriActor* Karakuri = *It;
+		const float DistSq = FVector::DistSquared(PlayerLocation, Karakuri->GetActorLocation());
+		
+		if (DistSq < NearestDistSq)
+		{
+			NearestDistSq = DistSq;
+			NearestKarakuri = Karakuri;
+		}
+	}
+	
+	
+	return NearestKarakuri;
+}
 
 void UKarakuriPlacementComponent::SpawnKarakuriActor()
 {
@@ -136,9 +216,10 @@ void UKarakuriPlacementComponent::SpawnKarakuriActor()
 			NewKarakuri->Tags.Add(TEXT("KarakuriGround"));
 			NewKarakuri->SetActorLocation(GhostActor->GetActorLocation());
 			NewKarakuri->SetActorRotation(GhostActor->GetActorRotation());
-			LockedAnchorLocation = NewKarakuri->GetActorLocation();
-			LockedAnchorRotation = NewKarakuri->GetActorRotation();
 		}
 	}
+	if (bFreePlacementOverride)
+	{
+		bFreePlacementOverride = false;
+	}
 }
-

@@ -41,26 +41,26 @@ void AMomentTriggerPlayerController::SetupInputComponent()
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMomentTriggerPlayerController::Move);
-		EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Started, this, &AMomentTriggerPlayerController::MouseLockStarted);	
+		EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Started, this, &AMomentTriggerPlayerController::MouseLockStarted);
 		EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Triggered, this, &AMomentTriggerPlayerController::MouseLockTrigger);
 		EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::MouseLockComplated);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AMomentTriggerPlayerController::OnSprint);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::EndSprint);
 	}
-		
+
 }
 
 void AMomentTriggerPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	
+
+
 }
 
 void AMomentTriggerPlayerController::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
-	
+
 	if (APawn* ControlledPawn = GetPawn())
 	{
 		// ControlledPawn->AddMovementInput(FVector::ForwardVector, MovementVector.Y);
@@ -75,12 +75,12 @@ void AMomentTriggerPlayerController::Move(const FInputActionValue& Value)
 				// 스프링 암 컴포넌트의 회전값 Yaw를 추출
 				FRotator SpringArmRotator = TargetCharacter->SpringArmComp->GetComponentRotation();
 				FRotator YawRotation(0.0f, SpringArmRotator.Yaw, 0.0f);
-				
+
 
 				// 스프링암 기준으로 벡터 계산
 				const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 				const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-				
+
 				//AddMovementInput
 				ControlledPawn->AddMovementInput(ForwardDirection, MovementVector.X);
 				ControlledPawn->AddMovementInput(RightDirection, MovementVector.Y);
@@ -95,7 +95,7 @@ void AMomentTriggerPlayerController::Move(const FInputActionValue& Value)
 
 void AMomentTriggerPlayerController::OnSprint()
 {
-	
+
 	if (AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn()))
 	{
 		TargetCharacter->SetSprint(true);
@@ -104,7 +104,7 @@ void AMomentTriggerPlayerController::OnSprint()
 
 void AMomentTriggerPlayerController::EndSprint()
 {
-	
+
 	if (AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn()))
 	{
 		TargetCharacter->SetSprint(false);
@@ -160,11 +160,11 @@ void AMomentTriggerPlayerController::MouseLockTrigger()
 			TargetCharacter->RotateToTargetLocation(HitResult.ImpactPoint);
 			if (TargetCharacter->KarakuriPlacementComp)
 			{
-				TargetCharacter->KarakuriPlacementComp->UpdatePlacementPreview();
+				const bool bSnapOverride = WasInputKeyJustPressed(EKeys::V);
+				TargetCharacter->KarakuriPlacementComp->UpdatePlacementPreview(HitResult,bSnapOverride);
 			}
 		}
 	}
-
 }
 // 우클릭 뗄시 다시 캐릭터 이동에 회전 보간
 void AMomentTriggerPlayerController::MouseLockComplated()
