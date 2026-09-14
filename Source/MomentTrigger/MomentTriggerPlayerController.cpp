@@ -46,6 +46,9 @@ void AMomentTriggerPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(MouseLock, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::MouseLockComplated);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AMomentTriggerPlayerController::OnSprint);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::EndSprint);
+		EnhancedInputComponent->BindAction(KarakuriToggle, ETriggerEvent::Started, this, &AMomentTriggerPlayerController::KarakuriPlacementStarted);
+		EnhancedInputComponent->BindAction(KarakuriToggle, ETriggerEvent::Triggered, this, &AMomentTriggerPlayerController::KarakuriPlacementTrigger);
+		EnhancedInputComponent->BindAction(KarakuriToggle, ETriggerEvent::Completed, this, &AMomentTriggerPlayerController::KarakuriPlacementComplated);
 	}
 
 }
@@ -53,8 +56,6 @@ void AMomentTriggerPlayerController::SetupInputComponent()
 void AMomentTriggerPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-
 }
 
 void AMomentTriggerPlayerController::Move(const FInputActionValue& Value)
@@ -113,15 +114,6 @@ void AMomentTriggerPlayerController::EndSprint()
 
 void AMomentTriggerPlayerController::MouseLockStarted()
 {
-	AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn());
-	if (TargetCharacter)
-	{
-		TargetCharacter->SetMouseLookState(true);
-		if (TargetCharacter->KarakuriPlacementComp)
-		{
-			TargetCharacter->KarakuriPlacementComp->BeginPlacementPreview();
-		}
-	}
 
 }
 
@@ -131,26 +123,27 @@ void AMomentTriggerPlayerController::MouseLockTrigger()
 	// 캐릭터 의 컨트롤중인 폰 캐스트 -> lock 트리거 동안 회전보간 끄기
 	// 우클릭시 마우스 회전벡터 로 캐릭터 방향 바라보기 기능
 	// 통합함
-	 // if (AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn()))
-	 // {
-	 // 	TargetCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
-	 // }
-	 // APawn* ControlledPawn = GetPawn();
-	 // if (ControlledPawn)
-	 // {
-	 // 	FHitResult HitResult;
-	 // 	if (GetHitResultUnderCursor(ECC_Visibility, false, HitResult))
-	 // 	{
-	 // 		FRotator PlayerRotation = ControlledPawn->GetActorRotation();
-	 // 		//캐릭터 위치에서 커서 포인트 까지 회전값 계산
-	 // 		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(ControlledPawn->GetActorLocation(), HitResult.ImpactPoint);
-	 // 		// Yaw만 적용 -> 플레이어의 메쉬와 방향 확인하기
-	 // 		FRotator NewRotation = FRotator(0.0f, TargetRotation.Yaw, 0.0f);
-	 // 		//부드러운 플레이어의 회전 보간
-	 // 		FRotator PlayerMouseLook = FMath::RInterpTo(PlayerRotation,NewRotation,GetWorld()->GetDeltaSeconds(),12.0f);
-	 // 		ControlledPawn->SetActorRotation(PlayerMouseLook);
-	 // 	}
-	 // }
+	 if (AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn()))
+	 {
+	 	TargetCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
+	 }
+	 APawn* ControlledPawn = GetPawn();
+	 if (ControlledPawn)
+	 {
+	 	FHitResult HitResult;
+	 	if (GetHitResultUnderCursor(ECC_Visibility, false, HitResult))
+	 	{
+	 		FRotator PlayerRotation = ControlledPawn->GetActorRotation();
+	 		//캐릭터 위치에서 커서 포인트 까지 회전값 계산
+	 		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(ControlledPawn->GetActorLocation(), HitResult.ImpactPoint);
+	 		// Yaw만 적용 -> 플레이어의 메쉬와 방향 확인하기
+	 		FRotator NewRotation = FRotator(0.0f, TargetRotation.Yaw, 0.0f);
+	 		//부드러운 플레이어의 회전 보간
+	 		FRotator PlayerMouseLook = FMath::RInterpTo(PlayerRotation,NewRotation,GetWorld()->GetDeltaSeconds(),12.0f);
+	 		ControlledPawn->SetActorRotation(PlayerMouseLook);
+	 	}
+	 }
+	/*
 	AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn());
 	if (TargetCharacter)
 	{
@@ -165,13 +158,49 @@ void AMomentTriggerPlayerController::MouseLockTrigger()
 			}
 		}
 	}
+	*/
 }
 // 우클릭 뗄시 다시 캐릭터 이동에 회전 보간
 void AMomentTriggerPlayerController::MouseLockComplated()
 {
 	if (AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn()))
 	{
-		TargetCharacter->SetMouseLookState(false);
+		TargetCharacter->GetCharacterMovement()->bOrientRotationToMovement = true;
+	}
+}
+
+void AMomentTriggerPlayerController::KarakuriPlacementStarted()
+{
+AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn());
+if (TargetCharacter)
+{
+	// TargetCharacter->SetMouseLookState(true); 마우스 관련 코드 짰을때 유해
+	if (TargetCharacter->KarakuriPlacementComp)
+	{
+		TargetCharacter->KarakuriPlacementComp->BeginPlacementPreview();
+	}
+}
+}
+
+void AMomentTriggerPlayerController::KarakuriPlacementTrigger()
+{
+	if (AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn()))
+	{
+		// TargetCharacter->SetMouseLookState(false);
+		// TargetCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
+		if (TargetCharacter->KarakuriPlacementComp)
+		{
+			const bool bSnapOverride = WasInputKeyJustPressed(EKeys::V);
+			TargetCharacter->KarakuriPlacementComp->UpdatePlacementPreview();
+		}
+	}
+}
+
+void AMomentTriggerPlayerController::KarakuriPlacementComplated()
+{
+	if (AMomentTriggerCharacter* TargetCharacter = Cast<AMomentTriggerCharacter>(GetPawn()))
+	{
+		// TargetCharacter->SetMouseLookState(false);
 		// TargetCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
 		if (TargetCharacter->KarakuriPlacementComp)
 		{
@@ -179,3 +208,4 @@ void AMomentTriggerPlayerController::MouseLockComplated()
 		}
 	}
 }
+

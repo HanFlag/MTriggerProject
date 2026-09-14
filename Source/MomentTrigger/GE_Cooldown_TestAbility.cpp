@@ -9,7 +9,7 @@
 UGE_Cooldown_TestAbility::UGE_Cooldown_TestAbility()
 {
 	DurationPolicy = EGameplayEffectDurationType::HasDuration;
-	DurationMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(0.2f));
+	DurationMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(0.05f));
 }
 
 void UGE_Cooldown_TestAbility::PostInitProperties()

@@ -32,9 +32,64 @@ void UKarakuriPlacementComponent::BeginPlacementPreview()
 	}
 }
 
-void UKarakuriPlacementComponent::UpdatePlacementPreview(const FHitResult& CursorHit, bool bSnapOverride)
+void UKarakuriPlacementComponent::UpdatePlacementPreview()
 {
 	AActor* OwnerActor = GetOwner();
+	if (!GhostActor || !OwnerActor)
+	{
+		return;
+	}
+	/*
+	// 이번 틱에 V(스냅 중단)키가 눌렸으면 뒤집기
+	if (bSnapOverride)
+	{
+		//bFreePlacementOverride = !bFreePlacementOverride;나중에 추가 예정***
+	}
+	const float DistToOrigin = FVector::Dist(OwnerActor->GetActorLocation(),OriginLocation);
+	bIsSnapLocked = (PlacementCount > 0) && (DistToOrigin < LockedAnchorRadius) ; //&&//!bFreePlacementOverride;나중에 추가 예정***
+	*/
+	FVector CandidateLocation;
+	FRotator CandidateRotation;
+	
+	if (!bIsSnapLocked)
+	{
+		CandidateRotation = SnapRotationToCardinal(OwnerActor->GetActorRotation());
+		const FVector Forward = OwnerActor->GetActorLocation() + CandidateRotation.Vector() * GridCellSize;
+		//그리드 관련 업데이트틑 빼고, 월드 좌표로 투영하기로 함
+		// FVector GridSnapped = FVector(FMath::GridSnap(Forward.X, GridCellSize), FMath::GridSnap(Forward.Y, GridCellSize), Forward.Z);
+		
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(OwnerActor);
+		const FVector TraceStart = Forward + FVector(0.0f, 0.0f, 200.0f);
+		const FVector TraceEnd = Forward - FVector(0.0f, 0.0f, 200.0f);
+		FHitResult GroundHit;
+		const bool bHitGround = GetWorld()->LineTraceSingleByChannel(GroundHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
+		if (!bHitGround || !IsBuildableSurface(GroundHit))
+		{
+			GhostActor->SetGhostVisible(false);
+			bIsValidSpawnLocation = false;
+			return;
+		}
+		CandidateLocation = GroundHit.ImpactPoint;
+	}
+	else
+	{
+		const int32 ColumnIndex = PlacementCount / 3;
+		const int32 HeightIndex = PlacementCount % 3;
+		const FVector RightAxis = OriginRotation.RotateVector(FVector::RightVector);
+		UE_LOG(LogTemp, Warning, TEXT("ColumnIndex : %d, HeightIndex : %d"), ColumnIndex, HeightIndex);
+		
+		CandidateLocation = OriginLocation + (RightAxis * GridCellSize * ColumnIndex) + FVector(0.0f, 0.0f, GridCellSize * HeightIndex);
+		CandidateRotation = OriginRotation;
+	}
+	bIsValidSpawnLocation = true;
+	GhostActor->SetGhostVisible(true);
+	GhostActor->UpdateGhostTransform(CandidateLocation, CandidateRotation);
+	
+	
+	/*
+	 // 커서 좌표 기준 카라쿠리 설치 코드
+	*AActor* OwnerActor = GetOwner();
 	if (!GhostActor || !OwnerActor)
 	{
 		return;
@@ -111,7 +166,8 @@ void UKarakuriPlacementComponent::UpdatePlacementPreview(const FHitResult& Curso
 		bIsValidSpawnLocation = true;
 		GhostActor->SetGhostVisible(true);
 		GhostActor->UpdateGhostTransform(SideGroundHit.ImpactPoint, LockedAnchorRotation);
-	}
+		}*/
+	
 	/*
 	if (bIsSnapLocked)
 	{
@@ -173,6 +229,8 @@ FRotator UKarakuriPlacementComponent::SnapRotationToCardinal(const FRotator& InR
 	const float SnappedYaw = FMath::RoundToFloat(InRotation.Yaw / 45.0f) * 45.0f;
 	return FRotator(0.0f, SnappedYaw, 0.0f);
 }
+
+/*
 // null 이면 해당 한변 내에 카라쿠리 없음 null이 아니면 가까운 반경 내 카라쿠리 앵커 스냅 활성
 // 월드 내 카라쿠리 액터 순회
 ABaseKarakuriActor* UKarakuriPlacementComponent::FindNearestKarakuriAnchor(const FVector& PlayerLocation) const
@@ -195,10 +253,45 @@ ABaseKarakuriActor* UKarakuriPlacementComponent::FindNearestKarakuriAnchor(const
 	
 	return NearestKarakuri;
 }
+*/
 
 void UKarakuriPlacementComponent::SpawnKarakuriActor()
 {
 	if (!bIsValidSpawnLocation)
+	{
+		return;
+	}
+	if (!KarakuriClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("KarakuriClass is not set"));
+		return;
+	}
+	if (KarakuriClass)
+	{
+		ABaseKarakuriActor* NewKarakuri = GetWorld()->SpawnActor<ABaseKarakuriActor>(KarakuriClass);
+		if (NewKarakuri)
+		{
+			NewKarakuri->Tags.Add(TEXT("KarakuriGround"));
+			NewKarakuri->SetActorLocation(GhostActor->GetActorLocation());
+			NewKarakuri->SetActorRotation(GhostActor->GetActorRotation());
+		}
+		if (!bIsSnapLocked)
+		{
+			OriginLocation = NewKarakuri->GetActorLocation();
+			OriginRotation = NewKarakuri->GetActorRotation();
+			PlacementCount = 1;
+		}
+		else
+		{
+			PlacementCount++;
+		}
+	}
+
+	
+	
+	/*
+	 // 마우스 좌표 기준 스폰 액터 코드
+	 if (!bIsValidSpawnLocation)
 	{
 		return;
 	}
@@ -221,5 +314,5 @@ void UKarakuriPlacementComponent::SpawnKarakuriActor()
 	if (bFreePlacementOverride)
 	{
 		bFreePlacementOverride = false;
-	}
+	}*/
 }

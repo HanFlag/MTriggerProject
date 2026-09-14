@@ -58,5 +58,6 @@ void UGA_TestAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		SpawnKarakuri->KarakuriPlacementComp->SpawnKarakuriActor();
 	}
 	
+	
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

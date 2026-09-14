@@ -175,6 +175,14 @@ void AMomentTriggerCharacter::RotateToTargetLocation(const FVector& TargetLocati
 
 void AMomentTriggerCharacter::TestActivateAbility()
 {
+	if (APlayerController* PC = GetController<APlayerController>())
+	{
+		if (!PC->IsInputKeyDown(EKeys::LeftControl))
+		{
+			return;
+		}
+	}
+	
 	if (AbilitySystemComp)
 	{
 		AbilitySystemComp->TryActivateAbilityByClass(TestAbilityClass);

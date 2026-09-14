@@ -42,6 +42,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* SprintAction;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* KarakuriToggle;
+	
 	
 	
 	void Move(const FInputActionValue& Value);
@@ -52,6 +55,11 @@ protected:
 	void MouseLockStarted();
 	void MouseLockTrigger();
 	void MouseLockComplated();
+	
+	
+	void KarakuriPlacementStarted();
+	void KarakuriPlacementTrigger();
+	void KarakuriPlacementComplated();
 	
 public:
 	bool bIsMouseLockPressed = false;
