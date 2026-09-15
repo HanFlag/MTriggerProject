@@ -30,6 +30,9 @@ public:
 	void EndPlacementPreview();
 	
 	ABaseKarakuriActor* FindKarakuriAtLocation(const FVector& TargetLocation) const;
+	bool CheckDoorRecipe(TArray<ABaseKarakuriActor*>& OutFoindKarakuri) const;
+	
+	void TryCompleteDoorRecipe();
 
 protected:
 	virtual void BeginPlay() override;
@@ -46,6 +49,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Karakuri")
 	float GridCellSize = 100.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Karakuri")
+	TSubclassOf<AActor> DoorRecipeClass;
 
 	// HitResult의 액터가 "KarakuriGround" 태그를 가진 설치 가능 표면인지 판정
 	bool IsBuildableSurface(const FHitResult& HitResult) const;

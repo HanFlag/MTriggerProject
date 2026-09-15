@@ -40,14 +40,15 @@ void UKarakuriPlacementComponent::UpdatePlacementPreview()
 		return;
 	}
 	/*
-	// 이번 틱에 V(스냅 중단)키가 눌렸으면 뒤집기
+	// 이번 틱에 V(스냅 중단)키가 눌렸으면 뒤집기 나중에 추가 예정***
 	if (bSnapOverride)
 	{
-		//bFreePlacementOverride = !bFreePlacementOverride;나중에 추가 예정***
+		//bFreePlacementOverride = !bFreePlacementOverride;
 	}
+	*/
 	const float DistToOrigin = FVector::Dist(OwnerActor->GetActorLocation(),OriginLocation);
 	bIsSnapLocked = (PlacementCount > 0) && (DistToOrigin < LockedAnchorRadius) ; //&&//!bFreePlacementOverride;나중에 추가 예정***
-	*/
+	
 	FVector CandidateLocation;
 	FRotator CandidateRotation;
 	
@@ -216,6 +217,61 @@ void UKarakuriPlacementComponent::EndPlacementPreview()
 	}
 }
 
+ABaseKarakuriActor* UKarakuriPlacementComponent::FindKarakuriAtLocation(const FVector& TargetLocation) const
+{
+	constexpr float Tolerance = 10.0f;
+	for (TActorIterator<ABaseKarakuriActor> It(GetWorld()); It; ++It)
+	{
+		ABaseKarakuriActor* Karakuri = *It;
+		if (FVector::DistSquared(Karakuri->GetActorLocation(), TargetLocation) < FMath::Square(Tolerance))
+		{
+			return Karakuri;
+		}
+	}
+	return nullptr;
+}
+
+bool UKarakuriPlacementComponent::CheckDoorRecipe(TArray<ABaseKarakuriActor*>& OutFoindKarakuri) const
+{
+	OutFoindKarakuri.Empty();
+	const FVector RightAxis = OriginRotation.RotateVector(FVector::RightVector);
+	
+	for (int32 Column = 0; Column < 2; ++Column)
+	{
+		for (int32 Height = 0; Height < 3; ++Height)
+		{
+			const FVector CheckLocation = OriginLocation + (RightAxis * GridCellSize * Column) + FVector(0.0f, 0.0f, GridCellSize * Height);
+			ABaseKarakuriActor* Found = FindKarakuriAtLocation(CheckLocation);
+			if (!Found)
+			{
+				return false;
+			}
+			OutFoindKarakuri.Add(Found);
+		}
+	}
+	return true;
+}
+
+void UKarakuriPlacementComponent::TryCompleteDoorRecipe()
+{
+	TArray<ABaseKarakuriActor*> FoundKarakuri;
+	if (!CheckDoorRecipe(FoundKarakuri))
+	{
+		return;
+	}
+	const FVector RightAxis = OriginRotation.RotateVector(FVector::RightVector);
+	const FVector DoorLocation = OriginLocation + (RightAxis * GridCellSize * 0.5f)+FVector(0.0f,0.0f,GridCellSize);
+	for (ABaseKarakuriActor* Karakuri : FoundKarakuri)
+	{
+		Karakuri->Destroy();
+	}
+	if (DoorRecipeClass)
+	{
+		GetWorld()->SpawnActor<AActor>(DoorRecipeClass, DoorLocation, OriginRotation);
+	}
+	PlacementCount = 0;
+}
+
 bool UKarakuriPlacementComponent::IsBuildableSurface(const FHitResult& HitResult) const
 {
 	static const FName BuildableSurfaceTag(TEXT("KarakuriGround"));
@@ -284,6 +340,7 @@ void UKarakuriPlacementComponent::SpawnKarakuriActor()
 		else
 		{
 			PlacementCount++;
+			TryCompleteDoorRecipe();
 		}
 	}
 
