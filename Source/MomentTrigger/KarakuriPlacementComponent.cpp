@@ -219,6 +219,7 @@ void UKarakuriPlacementComponent::EndPlacementPreview()
 
 ABaseKarakuriActor* UKarakuriPlacementComponent::FindKarakuriAtLocation(const FVector& TargetLocation) const
 {
+	//컴파일시 확정 값
 	constexpr float Tolerance = 10.0f;
 	for (TActorIterator<ABaseKarakuriActor> It(GetWorld()); It; ++It)
 	{
@@ -231,9 +232,10 @@ ABaseKarakuriActor* UKarakuriPlacementComponent::FindKarakuriAtLocation(const FV
 	return nullptr;
 }
 
-bool UKarakuriPlacementComponent::CheckDoorRecipe(TArray<ABaseKarakuriActor*>& OutFoindKarakuri) const
+bool UKarakuriPlacementComponent::CheckDoorRecipe(TArray<ABaseKarakuriActor*>& OutFoundKarakuri) const
 {
-	OutFoindKarakuri.Empty();
+	// 값 초기화
+	OutFoundKarakuri.Empty();
 	const FVector RightAxis = OriginRotation.RotateVector(FVector::RightVector);
 	
 	for (int32 Column = 0; Column < 2; ++Column)
@@ -246,12 +248,12 @@ bool UKarakuriPlacementComponent::CheckDoorRecipe(TArray<ABaseKarakuriActor*>& O
 			{
 				return false;
 			}
-			OutFoindKarakuri.Add(Found);
+			OutFoundKarakuri.Add(Found);
 		}
 	}
 	return true;
 }
-
+// 문 레시피 확정 시 Spawn 함수에서 호출
 void UKarakuriPlacementComponent::TryCompleteDoorRecipe()
 {
 	TArray<ABaseKarakuriActor*> FoundKarakuri;
@@ -263,12 +265,19 @@ void UKarakuriPlacementComponent::TryCompleteDoorRecipe()
 	const FVector DoorLocation = OriginLocation + (RightAxis * GridCellSize * 0.5f)+FVector(0.0f,0.0f,GridCellSize);
 	for (ABaseKarakuriActor* Karakuri : FoundKarakuri)
 	{
+		//Complate시 삭제
 		Karakuri->Destroy();
 	}
 	if (DoorRecipeClass)
 	{
-		GetWorld()->SpawnActor<AActor>(DoorRecipeClass, DoorLocation, OriginRotation);
+		//블루프린트 프로퍼티 설정된 액터 불러오기, 좌표, 회전 값
+		AActor* BlockingDoor = GetWorld()->SpawnActor<AActor>(DoorRecipeClass, DoorLocation, OriginRotation);
+		if (BlockingDoor)
+		{
+			BlockingDoor->Tags.Add(TEXT("KarakuriDoor"));
+		}
 	}
+	// 클러스터 0 으로 초기화
 	PlacementCount = 0;
 }
 

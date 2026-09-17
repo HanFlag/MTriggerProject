@@ -50,6 +50,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Karakuri")
 	float GridCellSize = 100.0f;
 	
+	//도어 레시피 선언
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Karakuri")
 	TSubclassOf<AActor> DoorRecipeClass;
 
