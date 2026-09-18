@@ -66,6 +66,9 @@ protected:
 	// 배치한 카라쿠리를 반경 내 가까운 카라쿠리를 확인하기
 	//ABaseKarakuriActor* FindNearestKarakuriAnchor(const FVector& PlayerLocation) const;
 	
+	//근처 기존 클러스트 있는지 재검색 함수
+	bool TryReclaimNearByCluster(const FVector& PlayerLocation);
+	
 
 	// 락 여부
 	bool bIsSnapLocked = false;

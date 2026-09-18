@@ -46,6 +46,10 @@ void UKarakuriPlacementComponent::UpdatePlacementPreview()
 		//bFreePlacementOverride = !bFreePlacementOverride;
 	}
 	*/
+	if (PlacementCount == 0 || FVector::Dist(OwnerActor->GetActorLocation(),OriginLocation) >= LockedAnchorRadius)
+	{
+		TryReclaimNearByCluster(OwnerActor->GetActorLocation());
+	}
 	const float DistToOrigin = FVector::Dist(OwnerActor->GetActorLocation(),OriginLocation);
 	bIsSnapLocked = (PlacementCount > 0) && (DistToOrigin < LockedAnchorRadius) ; //&&//!bFreePlacementOverride;나중에 추가 예정***
 	
@@ -295,6 +299,40 @@ FRotator UKarakuriPlacementComponent::SnapRotationToCardinal(const FRotator& InR
 	return FRotator(0.0f, SnappedYaw, 0.0f);
 }
 
+bool UKarakuriPlacementComponent::TryReclaimNearByCluster(const FVector& PlayerLocation)
+{
+	ABaseKarakuriActor* AnyNearby = nullptr;
+	float NearestDistSq = FMath::Square(LockedAnchorRadius);
+	for (TActorIterator<ABaseKarakuriActor> It(GetWorld()); It; ++It)
+	{
+		ABaseKarakuriActor* Karakuri = *It;
+		const float DistSq = FVector::DistSquared(PlayerLocation, Karakuri->GetActorLocation());
+		if (DistSq < NearestDistSq)
+		{
+			NearestDistSq = DistSq;
+			AnyNearby = Karakuri;
+		}
+	}
+	if (!AnyNearby)
+	{
+		return false;
+	}
+	int32 MaxIndex = AnyNearby->ClusterIndex;
+	constexpr float OriginTolenrance =10.0f;
+	for (TActorIterator<ABaseKarakuriActor> It(GetWorld()); It; ++It)
+	{
+		ABaseKarakuriActor* Karakuri = *It;
+		if (FVector::DistSquared(Karakuri->ClusterOrigin, AnyNearby->ClusterOrigin) < FMath::Square(OriginTolenrance))
+		{
+			MaxIndex = FMath::Max(MaxIndex, Karakuri->ClusterIndex);
+		}
+	}
+	OriginLocation = AnyNearby->ClusterOrigin;
+	OriginRotation = AnyNearby->ClusterRotation;
+	PlacementCount = MaxIndex + 1;
+	return true;
+}
+
 /*
 // null 이면 해당 한변 내에 카라쿠리 없음 null이 아니면 가까운 반경 내 카라쿠리 앵커 스냅 활성
 // 월드 내 카라쿠리 액터 순회
@@ -344,11 +382,16 @@ void UKarakuriPlacementComponent::SpawnKarakuriActor()
 		{
 			OriginLocation = NewKarakuri->GetActorLocation();
 			OriginRotation = NewKarakuri->GetActorRotation();
+			NewKarakuri->ClusterOrigin = OriginLocation;
+			NewKarakuri->ClusterRotation = OriginRotation;
 			PlacementCount = 1;
 		}
 		else
 		{
 			PlacementCount++;
+			NewKarakuri->ClusterOrigin = OriginLocation;
+			NewKarakuri->ClusterRotation = OriginRotation;
+			NewKarakuri->ClusterIndex = PlacementCount - 1;
 			TryCompleteDoorRecipe();
 		}
 	}

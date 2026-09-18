@@ -3,6 +3,8 @@
 
 #include "EnemyCharacter.h"
 
+#include "AssetDefinitionAssetInfo.h"
+#include "SWarningOrErrorBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -110,5 +112,8 @@ void AEnemyCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector Norma
 		ChargeElapsed = 0.0f;
 		CurrentState = EEnemyState::Chase;
 		OtherActor->Destroy();
+		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetActorLabel());
+		UE_LOG(LogTemp, Warning, TEXT("Current State : %d"), (int32)CurrentState);
 	}
 }

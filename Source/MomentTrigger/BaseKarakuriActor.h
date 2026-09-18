@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/Actor.h"
 #include "BaseKarakuriActor.generated.h"
 
@@ -14,7 +15,14 @@ class MOMENTTRIGGER_API ABaseKarakuriActor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ABaseKarakuriActor();
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SceneComp")
+	USceneComponent* SceneComp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CollisionComp")
+	UBoxComponent* CollisionComp;
 
+
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -22,5 +30,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	FVector ClusterOrigin;
+	FRotator ClusterRotation;
+	int32 ClusterIndex = 0;
+	
 };
