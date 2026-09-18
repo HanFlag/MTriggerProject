@@ -35,3 +35,10 @@ void ABaseKarakuriActor::Tick(float DeltaTime)
 
 }
 
+void ABaseKarakuriActor::SetClusterInfo(const FVector& Origin, const FRotator& Rotation, int32 Index)
+{
+	ClusterOrigin = Origin;
+	ClusterRotation = Rotation;
+	ClusterIndex = Index;
+}
+

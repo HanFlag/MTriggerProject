@@ -30,8 +30,17 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
+	//캡슐화 목적으로 Getter, Setter 의 현장 ********* 중요 !
+	void SetClusterInfo(const FVector& Origin, const FRotator& Rotation, int32 Index);
+	FVector GetClusterOrigin() const {return ClusterOrigin;}
+	FRotator GetClusterRotation() const {return ClusterRotation;}
+	int32 GetClusterIndex() const {return ClusterIndex;}
+	
+protected:
 	FVector ClusterOrigin;
 	FRotator ClusterRotation;
-	int32 ClusterIndex = 0;
+	int32 ClusterIndex;
+	
 	
 };

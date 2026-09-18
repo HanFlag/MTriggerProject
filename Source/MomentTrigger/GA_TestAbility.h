@@ -23,4 +23,5 @@ public:
 
 	UPROPERTY()
 	TSubclassOf<class UGameplayEffect> TestDamageEffectClass;
+	
 };

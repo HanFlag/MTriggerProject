@@ -54,6 +54,7 @@ AMomentTriggerCharacter::AMomentTriggerCharacter()
 	AbilitySystemComp->SetReplicationMode(AscReplicationMode);
 	//AbilitySystemComp->InitAbilityActorInfo(this,this);
 	AttributeSet = CreateDefaultSubobject<UMomentTriggerAttributeSet>(TEXT("AttributeSet"));
+	
 
 	KarakuriPlacementComp = CreateDefaultSubobject<UKarakuriPlacementComponent>(TEXT("KarakuriPlacementComp"));
 }
@@ -76,6 +77,10 @@ void AMomentTriggerCharacter::PossessedBy(AController* NewController)
 		if (TestAbilityClass)
 		{
 			AbilitySystemComp->GiveAbility(FGameplayAbilitySpec(TestAbilityClass,1,INDEX_NONE, this));
+		}
+		if (BasicAttackClass)
+		{
+			AbilitySystemComp->GiveAbility(FGameplayAbilitySpec(BasicAttackClass,1,INDEX_NONE, this));
 		}
 		if (AttributeSet)
 		{
@@ -123,6 +128,7 @@ void AMomentTriggerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedInputComponent->BindAction(TestAbilityAction,ETriggerEvent::Started,this,&AMomentTriggerCharacter::TestActivateAbility);
+		EnhancedInputComponent->BindAction(AttackAction,ETriggerEvent::Started,this,&AMomentTriggerCharacter::AttackInput);
 	}
 
 }
@@ -186,6 +192,15 @@ void AMomentTriggerCharacter::TestActivateAbility()
 	if (AbilitySystemComp)
 	{
 		AbilitySystemComp->TryActivateAbilityByClass(TestAbilityClass);
+	}
+}
+
+void AMomentTriggerCharacter::AttackInput()
+{
+	UE_LOG(LogTemp, Display, TEXT("Attack!"));
+	if (AbilitySystemComp)
+	{
+		AbilitySystemComp->TryActivateAbilityByClass(BasicAttackClass);
 	}
 }
 

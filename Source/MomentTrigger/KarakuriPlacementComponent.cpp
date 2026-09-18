@@ -317,18 +317,18 @@ bool UKarakuriPlacementComponent::TryReclaimNearByCluster(const FVector& PlayerL
 	{
 		return false;
 	}
-	int32 MaxIndex = AnyNearby->ClusterIndex;
+	int32 MaxIndex = AnyNearby->GetClusterIndex();
 	constexpr float OriginTolenrance =10.0f;
 	for (TActorIterator<ABaseKarakuriActor> It(GetWorld()); It; ++It)
 	{
 		ABaseKarakuriActor* Karakuri = *It;
-		if (FVector::DistSquared(Karakuri->ClusterOrigin, AnyNearby->ClusterOrigin) < FMath::Square(OriginTolenrance))
+		if (FVector::DistSquared(Karakuri->GetClusterOrigin(), AnyNearby->GetClusterOrigin()) < FMath::Square(OriginTolenrance))
 		{
-			MaxIndex = FMath::Max(MaxIndex, Karakuri->ClusterIndex);
+			MaxIndex = FMath::Max(MaxIndex, Karakuri->GetClusterIndex());
 		}
 	}
-	OriginLocation = AnyNearby->ClusterOrigin;
-	OriginRotation = AnyNearby->ClusterRotation;
+	OriginLocation = AnyNearby->GetClusterOrigin();
+	OriginRotation = AnyNearby->GetClusterRotation();
 	PlacementCount = MaxIndex + 1;
 	return true;
 }
@@ -382,16 +382,13 @@ void UKarakuriPlacementComponent::SpawnKarakuriActor()
 		{
 			OriginLocation = NewKarakuri->GetActorLocation();
 			OriginRotation = NewKarakuri->GetActorRotation();
-			NewKarakuri->ClusterOrigin = OriginLocation;
-			NewKarakuri->ClusterRotation = OriginRotation;
+			NewKarakuri->SetClusterInfo(OriginLocation, OriginRotation, 0);
 			PlacementCount = 1;
 		}
 		else
 		{
 			PlacementCount++;
-			NewKarakuri->ClusterOrigin = OriginLocation;
-			NewKarakuri->ClusterRotation = OriginRotation;
-			NewKarakuri->ClusterIndex = PlacementCount - 1;
+			NewKarakuri->SetClusterInfo(OriginLocation, OriginRotation, PlacementCount - 1);
 			TryCompleteDoorRecipe();
 		}
 	}

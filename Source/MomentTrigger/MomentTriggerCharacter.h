@@ -58,6 +58,10 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* TestAbilityAction;
+	
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* AttackAction;
 
 	
 	// 어빌리티 콤프 정의
@@ -67,11 +71,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
 	TSubclassOf<UGameplayAbility> TestAbilityClass;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AbilitySystem")
+	TSubclassOf<UGameplayAbility> BasicAttackClass;
+	
 	void SetSprint(bool bEnable);
 
 	void SetMouseLookState(bool bIsMouseLooking);
 	void RotateToTargetLocation(const FVector& TargetLocation);
 	void TestActivateAbility();
+	void AttackInput();
 	
 	virtual  UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
