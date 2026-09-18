@@ -7,6 +7,7 @@
 #include "Animation/AnimInstance.h"
 #include "Abilities/GameplayAbility.h"
 #include "MomentTriggerGameplayTags.h"
+#include "MomentTriggerCharacter.h"
 #include "GA_BasicAttack.generated.h"
 
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Event_BasicAttack_Hit)
@@ -30,6 +31,12 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	TSubclassOf<AABasicAttackProjectile> ProjectileClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	TArray<FName> ComboSockets;
+	FName CurrentComboSocket;
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	TArray<UAnimMontage*> ComboMontages;
 	
 	
 	UFUNCTION()

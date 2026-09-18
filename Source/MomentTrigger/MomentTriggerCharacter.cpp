@@ -197,10 +197,18 @@ void AMomentTriggerCharacter::TestActivateAbility()
 
 void AMomentTriggerCharacter::AttackInput()
 {
-	UE_LOG(LogTemp, Display, TEXT("Attack!"));
-	if (AbilitySystemComp)
+	if (!bCanAttack)
 	{
-		AbilitySystemComp->TryActivateAbilityByClass(BasicAttackClass);
+		return;
+	}
+	const float CurrentTime = GetWorld()->GetTimeSeconds();
+	if (LastAttackTime > 0.0f && (CurrentTime - LastAttackTime) < MinAttackInterval)
+	{
+		return;
+	}
+	if (AbilitySystemComp && AbilitySystemComp->TryActivateAbilityByClass(BasicAttackClass))
+	{
+		bCanAttack = false;
 	}
 }
 

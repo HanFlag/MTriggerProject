@@ -39,7 +39,10 @@ void AABasicAttackProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	ProjectileMovementComp->Velocity = GetActorForwardVector() * ProjectileSpeed;
-	
+	if (APawn* MyInstigator = GetInstigator())
+	{
+		CollisionComp->IgnoreActorWhenMoving(MyInstigator, true);
+	}
 }
 
 // Called every frame

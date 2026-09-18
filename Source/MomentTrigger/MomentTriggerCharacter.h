@@ -82,6 +82,18 @@ public:
 	void AttackInput();
 	
 	virtual  UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
+	
+	UPROPERTY(BlueprintReadWrite, Category = "Combat")
+	int32 ComboCount = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float ComboWindowSeconds = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float LastAttackTime = -1.0f;
+	UPROPERTY(BlueprintReadWrite, Category = "Combat")
+	bool bCanAttack = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float MinAttackInterval = 0.3f;
 
 	
  	protected:

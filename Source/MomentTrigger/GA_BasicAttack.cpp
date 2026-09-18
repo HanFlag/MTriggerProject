@@ -4,6 +4,7 @@
 #include "GA_BasicAttack.h"
 
 #include "ABasicAttackProjectile.h"
+#include "MomentTriggerCharacter.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "MomentTriggerGameplayTags.h"
@@ -20,7 +21,24 @@ void UGA_BasicAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, AttackMontage);
+	AMomentTriggerCharacter* Character = Cast<AMomentTriggerCharacter>(ActorInfo->AvatarActor.Get());
+	if (!Character || ComboMontages.Num() == 0)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+	const float CurrentTime = Character->GetWorld()->GetTimeSeconds();
+	if (Character->LastAttackTime > 0.0f && (CurrentTime - Character->LastAttackTime) > Character->ComboWindowSeconds)
+	{
+		Character->ComboCount = 0;
+	}
+	const int32 ComboIndex = Character->ComboCount % ComboMontages.Num();
+	CurrentComboSocket = ComboSockets[ComboIndex];
+	UAnimMontage* MontageToPlay = ComboMontages[ComboIndex];
+	Character->ComboCount++;
+	Character->LastAttackTime = CurrentTime;
+	
+	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, MontageToPlay);
 	MontageTask->OnCompleted.AddDynamic(this, &UGA_BasicAttack::OnMontageComplated);
 	MontageTask->OnInterrupted.AddDynamic(this, &UGA_BasicAttack::OnMontageComplated);
 	MontageTask->OnCancelled.AddDynamic(this, &UGA_BasicAttack::OnMontageComplated);
@@ -38,9 +56,20 @@ void UGA_BasicAttack::OnHitEventReceived(FGameplayEventData Payload)
 	{
 		return;
 	}
-	const FVector SpawnLocation = Avatar->GetActorLocation() + Avatar->GetActorForwardVector() * 100.0f;
-	const FRotator SpawnRotation = Avatar->GetActorRotation();
-	
+	AMomentTriggerCharacter* Character = Cast<AMomentTriggerCharacter>(Avatar);
+	if (Character)
+	{
+		Character->bCanAttack = true;
+	}
+
+	FVector SpawnLocation = Avatar->GetActorLocation() + Avatar->GetActorForwardVector() * 100.0f;
+	FRotator SpawnRotation = Avatar->GetActorRotation();
+	if (Character && Character->GetMesh() && Character->GetMesh()->DoesSocketExist(CurrentComboSocket))
+	{
+		SpawnLocation = Character->GetMesh()->GetSocketLocation(CurrentComboSocket);
+		SpawnRotation = Character->GetActorRotation();
+	}
+
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = Avatar;
 	SpawnParams.Instigator = Cast<APawn>(Avatar);
@@ -51,6 +80,10 @@ void UGA_BasicAttack::OnHitEventReceived(FGameplayEventData Payload)
 
 void UGA_BasicAttack::OnMontageComplated()
 {
+	if (AMomentTriggerCharacter* Character = Cast<AMomentTriggerCharacter>(CurrentActorInfo->AvatarActor.Get()))
+	{
+		Character->bCanAttack = true;
+	}
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
