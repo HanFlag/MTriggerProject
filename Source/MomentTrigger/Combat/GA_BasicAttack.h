@@ -7,7 +7,7 @@
 #include "Animation/AnimInstance.h"
 #include "Abilities/GameplayAbility.h"
 #include "MomentTriggerGameplayTags.h"
-#include "MomentTriggerCharacter.h"
+#include "Core/MomentTriggerCharacter.h"
 #include "GA_BasicAttack.generated.h"
 
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Event_BasicAttack_Hit)

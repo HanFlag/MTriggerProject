@@ -6,7 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "MomentTriggerCharacter.h"
-#include "KarakuriPlacementComponent.h"
+#include "Karakuri/KarakuriPlacementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 

@@ -3,12 +3,12 @@
 
 #include "GA_TestAbility.h"
 
-#include "BaseKarakuriActor.h"
+#include "Karakuri/BaseKarakuriActor.h"
 #include "GE_Cooldown_TestAbility.h"
 #include "GE_TestDamage.h"
-#include "KarakuriPlacementComponent.h"
+#include "Karakuri/KarakuriPlacementComponent.h"
 #include "MomentTriggerAttributeSet.h"
-#include "MomentTriggerCharacter.h"
+#include "Core/MomentTriggerCharacter.h"
 
 UGA_TestAbility::UGA_TestAbility()
 {

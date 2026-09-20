@@ -4,7 +4,7 @@
 #include "GA_BasicAttack.h"
 
 #include "ABasicAttackProjectile.h"
-#include "MomentTriggerCharacter.h"
+#include "Core/MomentTriggerCharacter.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "MomentTriggerGameplayTags.h"
