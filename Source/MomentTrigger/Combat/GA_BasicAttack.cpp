@@ -39,9 +39,9 @@ void UGA_BasicAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	Character->LastAttackTime = CurrentTime;
 	
 	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, MontageToPlay);
-	MontageTask->OnCompleted.AddDynamic(this, &UGA_BasicAttack::OnMontageComplated);
-	MontageTask->OnInterrupted.AddDynamic(this, &UGA_BasicAttack::OnMontageComplated);
-	MontageTask->OnCancelled.AddDynamic(this, &UGA_BasicAttack::OnMontageComplated);
+	MontageTask->OnCompleted.AddDynamic(this, &UGA_BasicAttack::OnMontageCompleted);
+	MontageTask->OnInterrupted.AddDynamic(this, &UGA_BasicAttack::OnMontageCompleted);
+	MontageTask->OnCancelled.AddDynamic(this, &UGA_BasicAttack::OnMontageCompleted);
 	MontageTask->ReadyForActivation();
 	
 	UAbilityTask_WaitGameplayEvent* WaitEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, TAG_Event_BasicAttack_Hit, nullptr, true);
@@ -78,7 +78,7 @@ void UGA_BasicAttack::OnHitEventReceived(FGameplayEventData Payload)
 	
 }
 
-void UGA_BasicAttack::OnMontageComplated()
+void UGA_BasicAttack::OnMontageCompleted()
 {
 	if (AMomentTriggerCharacter* Character = Cast<AMomentTriggerCharacter>(CurrentActorInfo->AvatarActor.Get()))
 	{

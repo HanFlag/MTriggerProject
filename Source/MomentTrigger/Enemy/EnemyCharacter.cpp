@@ -110,7 +110,7 @@ void AEnemyCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector Norma
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
 		ChargeCooldownRemaining = ChargeCooldownDuration;
 		ChargeElapsed = 0.0f;
-		CurrentState = EEnemyState::Chase;
+		bDoorHitPending = true;
 		OtherActor->Destroy();
 		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetActorLabel());

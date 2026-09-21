@@ -42,7 +42,7 @@ public:
 	UFUNCTION()
 	void OnHitEventReceived (FGameplayEventData Payload);
 	UFUNCTION()
-	void OnMontageComplated();
+	void OnMontageCompleted();
 	
 	
 	

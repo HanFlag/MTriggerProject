@@ -56,6 +56,11 @@ public:
 	float ChargeElapsed = 0.0f;
 	// 돌전 시작 시 고정 회전 방향
 	FVector ChargeDirection;
+	//돌진 중인지?
+	bool bIsCharging = false;
+	//돌진 중 문을 쳤는지?
+	bool bDoorHitPending = false;
+	
 	
 	float DefaultWalkSpeed = 0.0f;
 	
