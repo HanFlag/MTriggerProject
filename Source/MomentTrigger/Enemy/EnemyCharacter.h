@@ -57,6 +57,9 @@ public:
 	bool bIsCharging = false;
 	//돌진 중 문을 쳤는지?
 	bool bDoorHitPending = false;
+	//돌진 데미지
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy")
+	float ChargeDamage = 30.0f;
 	
 	
 	float DefaultWalkSpeed = 0.0f;

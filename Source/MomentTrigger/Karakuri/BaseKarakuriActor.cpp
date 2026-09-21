@@ -18,6 +18,8 @@ ABaseKarakuriActor::ABaseKarakuriActor()
 	CollisionComp->SetupAttachment(RootComponent);
 	CollisionComp->SetBoxExtent(FVector(25.0f,0.0f,50.0f));
 	CollisionComp->SetCollisionProfileName(TEXT("BlockAll"));
+	
+	CurrentHP = MaxHP;
 
 }
 
@@ -42,3 +44,22 @@ void ABaseKarakuriActor::SetClusterInfo(const FVector& Origin, const FRotator& R
 	ClusterIndex = Index;
 }
 
+float ABaseKarakuriActor::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	if (bIsDestroyed)
+	{
+		return ActualDamage;
+	}
+	CurrentHP -= ActualDamage;
+	if (CurrentHP <= 0.0f)
+	{
+		bIsDestroyed = true;
+		OnKarakuriDestroyed();
+		Destroy();
+	}
+	return ActualDamage;
+	
+}

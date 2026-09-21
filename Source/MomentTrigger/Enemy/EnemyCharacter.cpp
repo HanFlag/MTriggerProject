@@ -11,6 +11,7 @@
 #include "Components/CapsuleComponent.h"
 #include "SWarningOrErrorBox.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
@@ -94,7 +95,7 @@ void AEnemyCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector Norma
 		bDoorHitPending = true;
 		//bIsCharging 나중에 문 체력이 낮은상태로 돌진을 한다면 OnHit 시 돌진 데미지가 문 HP보다 더 높을경우 차징을 계속해야하는지 멈춰야하는 지 고려대상
 		bIsCharging = false;
-		OtherActor->Destroy();
+		OtherActor->TakeDamage(ChargeDamage, FDamageEvent(), GetController(), this);
 		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetActorLabel());
 	}

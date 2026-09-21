@@ -52,7 +52,7 @@ protected:
 	
 	//도어 레시피 선언
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Karakuri")
-	TSubclassOf<AActor> DoorRecipeClass;
+	TSubclassOf<ABaseKarakuriActor> DoorRecipeClass;
 
 	// HitResult의 액터가 "KarakuriGround" 태그를 가진 설치 가능 표면인지 판정
 	bool IsBuildableSurface(const FHitResult& HitResult) const;

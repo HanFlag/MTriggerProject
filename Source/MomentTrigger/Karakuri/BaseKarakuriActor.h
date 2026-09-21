@@ -37,10 +37,21 @@ public:
 	FRotator GetClusterRotation() const {return ClusterRotation;}
 	int32 GetClusterIndex() const {return ClusterIndex;}
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Karakuri")
+	float MaxHP = 30.0f;
+	//중복 파괴 방지
+	bool bIsDestroyed = false;
+	
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "Karakuri")
+	// 파괴 연출용 블프 훅
+	void OnKarakuriDestroyed();
 protected:
 	FVector ClusterOrigin;
 	FRotator ClusterRotation;
 	int32 ClusterIndex;
+	float CurrentHP;
 	
 	
 };
