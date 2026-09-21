@@ -33,64 +33,6 @@ void AEnemyCharacter::Tick(float DeltaTime)
 		ChargeCooldownRemaining -= DeltaTime;
 	}
 
-	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	if (!PlayerPawn)
-	{
-		return;
-	}
-	const float DistToPlayer = FVector::Dist(GetActorLocation(), PlayerPawn->GetActorLocation());
-
-	switch (CurrentState)
-	{
-	case EEnemyState::Idle:
-		if (DistToPlayer <= DetectionRadius)
-		{
-			CurrentState = EEnemyState::Chase;
-		}
-		break;
-	case EEnemyState::Chase:
-		if (DistToPlayer > DetectionRadius)
-		{
-			CurrentState = EEnemyState::Idle;
-			break;
-		}
-		if (ChargeCooldownRemaining <= 0.0f)
-		{
-			//돌진 준비 시작
-			CurrentState = EEnemyState::Charge;
-			ChargeWindupElapsed = 0.0f;
-		}
-		else
-		{
-			//쿨다운중 추격
-			const FVector ToPlayer =(PlayerPawn->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-			AddMovementInput(ToPlayer);
-		}
-		break;
-	case EEnemyState::Charge:
-		if (ChargeWindupElapsed < ChargeWindupDuration)
-		{
-			//준비 모션중 방향만 갱신
-			ChargeWindupElapsed += DeltaTime;
-			ChargeDirection = (PlayerPawn->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-		}
-		else
-		{
-			//돌진
-			GetCharacterMovement()->MaxWalkSpeed = ChargeSpeed;
-			AddMovementInput(ChargeDirection);
-			
-			ChargeElapsed += DeltaTime;
-			if (ChargeElapsed >= ChargeDuration)
-			{
-				GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
-				ChargeCooldownRemaining = ChargeCooldownDuration;
-				ChargeElapsed = 0.0f;
-				CurrentState = EEnemyState::Chase;
-			}
-		}
-		break;
-	}
 }
 
 // Called to bind functionality to input
@@ -101,16 +43,19 @@ void AEnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void AEnemyCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (CurrentState != EEnemyState::Charge)
+	if (!bIsCharging)
 	{
 		return;
 	}
+
 	if (OtherActor && OtherActor->ActorHasTag(TEXT("KarakuriDoor")))
 	{
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
 		ChargeCooldownRemaining = ChargeCooldownDuration;
 		ChargeElapsed = 0.0f;
 		bDoorHitPending = true;
+		//bIsCharging 나중에 문 체력이 낮은상태로 돌진을 한다면 OnHit 시 돌진 데미지가 문 HP보다 더 높을경우 차징을 계속해야하는지 멈춰야하는 지 고려대상
+		bIsCharging = false;
 		OtherActor->Destroy();
 		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetActorLabel());
