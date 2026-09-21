@@ -11,6 +11,7 @@ UBTTask_ChargeWindup::UBTTask_ChargeWindup()
 {
 	NodeName = TEXT("ChargeWindup");
 	INIT_TASK_NODE_NOTIFY_FLAGS();
+	
 }
 
 EBTNodeResult::Type UBTTask_ChargeWindup::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

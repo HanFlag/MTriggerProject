@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
 #include "AbilitySystemComponent.h"
+#include "GameplayEffectExtension.h"
 #include "MomentTriggerAttributeSet.generated.h"
 
 #define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \
@@ -13,6 +14,8 @@
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName) 
 	
+// 죽은 액터가 누구인지 넘겨주는 델리게이트
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnHealthDepleted, AActor*);
 /**
  * 
  */
@@ -28,6 +31,10 @@ public:
 	ATTRIBUTE_ACCESSORS(UMomentTriggerAttributeSet, Health);
 	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	FOnHealthDepleted OnHealthDepleted;
+	
+	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 	
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth);

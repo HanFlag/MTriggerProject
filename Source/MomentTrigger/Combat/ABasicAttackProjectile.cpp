@@ -2,6 +2,10 @@
 
 
 #include "ABasicAttackProjectile.h"
+#include "AbilitySystemComponent.h"
+#include "GameplayEffect.h"
+#include "Combat/MomentTriggerGameplayTags.h"
+#include "AbilitySystemGlobals.h"
 
 // Sets default values
 AABasicAttackProjectile::AABasicAttackProjectile()
@@ -29,6 +33,23 @@ void AABasicAttackProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherA
 {
 	if (OtherActor && OtherActor != this && OtherActor != GetInstigator())
 	{
+		UAbilitySystemComponent* Player = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetInstigator());
+		UAbilitySystemComponent* HitOtherActor = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OtherActor);
+		if (Player && HitOtherActor)
+		{
+			FGameplayEffectContextHandle ContextHandle = Player->MakeEffectContext();
+			FGameplayEffectSpecHandle SpecHandle = Player->MakeOutgoingSpec(DamageEffectClass, 1.0f, ContextHandle);
+			if (!SpecHandle.IsValid())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("DamageEffectClass is not valid"));
+			}
+			else
+			{
+				SpecHandle.Data->SetSetByCallerMagnitude(TAG_Data_Damage, -DamageAmount);
+				Player->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), HitOtherActor);
+			}
+			
+		}
 		UE_LOG(LogTemp, Warning, TEXT("Hit %s"), *OtherActor->GetName());
 		Destroy();
 	}

@@ -2,8 +2,13 @@
 
 
 #include "EnemyCharacter.h"
-
+#include "AbilitySystemComponent.h"
+#include "AIController.h"
 #include "AssetDefinitionAssetInfo.h"
+#include "BrainComponent.h"
+#include "Combat/MomentTriggerAttributeSet.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "SWarningOrErrorBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -13,14 +18,28 @@ AEnemyCharacter::AEnemyCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
+	AbilitySystemComp = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComp->SetIsReplicated(true);
+	AttributeSet = CreateDefaultSubobject<UMomentTriggerAttributeSet>(TEXT("AttributeSet"));
 }
 
 // Called when the game starts or when spawned
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	if (AttributeSet)
+	{
+		AbilitySystemComp->InitAbilityActorInfo(this,this);
+		AttributeSet->OnHealthDepleted.AddUObject(this, &AEnemyCharacter::HandleDeath);
+	}
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	OnActorHit.AddDynamic(this, &AEnemyCharacter::OnHit);
+}
+
+UAbilitySystemComponent* AEnemyCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComp;
 }
 
 // Called every frame
@@ -41,6 +60,25 @@ void AEnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void AEnemyCharacter::HandleDeath(AActor* DeadActor)
+{
+	if (bIsDead)
+	{
+		return;
+	}
+	bIsDead = true;
+	if (AAIController* AICon = Cast<AAIController>(GetController()))
+	{
+		if (AICon->BrainComponent)
+		{
+			AICon->BrainComponent->StopLogic(TEXT("Died"));
+		}
+	}
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	OnDeath();
+	SetLifeSpan(3.0f);
+}
+
 void AEnemyCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (!bIsCharging)
@@ -59,6 +97,5 @@ void AEnemyCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector Norma
 		OtherActor->Destroy();
 		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetActorLabel());
-		UE_LOG(LogTemp, Warning, TEXT("Current State : %d"), (int32)CurrentState);
 	}
 }

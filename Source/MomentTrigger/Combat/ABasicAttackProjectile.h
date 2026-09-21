@@ -8,6 +8,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "ABasicAttackProjectile.generated.h"
 
+class UGameplayEffect;
+
 UCLASS()
 class MOMENTTRIGGER_API AABasicAttackProjectile : public AActor
 {
@@ -36,5 +38,10 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float DamageAmount = 10.0f;
 
 };

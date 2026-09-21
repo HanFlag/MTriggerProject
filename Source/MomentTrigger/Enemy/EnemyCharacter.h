@@ -3,19 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
 
-UENUM(BlueprintType)
-enum class EEnemyState : uint8
-{
-	Idle,
-	Chase,
-	Charge
-};
+class UAbilitySystemComponent;
+class UMomentTriggerAttributeSet;
+
 
 UCLASS()
-class MOMENTTRIGGER_API AEnemyCharacter : public ACharacter
+class MOMENTTRIGGER_API AEnemyCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -26,7 +23,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -34,7 +32,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
-	EEnemyState CurrentState = EEnemyState::Idle;
 	
 	//감지거리
 	UPROPERTY(EditDefaultsOnly, Category = "Enemy")
@@ -63,6 +60,20 @@ public:
 	
 	
 	float DefaultWalkSpeed = 0.0f;
+	
+	
+	bool bIsDead = false;
+	
+	void HandleDeath(AActor* DeadActor);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Enemy")
+	void OnDeath();
+	
+	
+	
+	UPROPERTY()
+	UAbilitySystemComponent* AbilitySystemComp;
+	UPROPERTY()
+	UMomentTriggerAttributeSet* AttributeSet;
 	
 	UFUNCTION()
 	void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);

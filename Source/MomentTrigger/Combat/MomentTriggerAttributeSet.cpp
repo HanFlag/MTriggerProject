@@ -20,6 +20,21 @@ void UMomentTriggerAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifeti
 	
 }
 
+void UMomentTriggerAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
+{
+	Super::PostGameplayEffectExecute(Data);
+	
+	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
+	{
+		SetHealth(FMath::Clamp(GetHealth(),0.0f,100.0f));
+		
+		if (GetHealth() <= 0.0f)
+		{
+			OnHealthDepleted.Broadcast(GetOwningActor());
+		}
+	}
+}
+
 void UMomentTriggerAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UMomentTriggerAttributeSet,Health,OldHealth);
