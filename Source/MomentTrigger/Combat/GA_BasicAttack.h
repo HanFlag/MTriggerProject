@@ -23,11 +23,11 @@ class MOMENTTRIGGER_API UGA_BasicAttack : public UGameplayAbility
 public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Ability")
-	UAnimMontage* AttackMontage;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Ability")
-	FName HitNotifyName = TEXT("Hit");
+	// UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	// UAnimMontage* AttackMontage;
+	//
+	// UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	// FName HitNotifyName = TEXT("Hit");
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	TSubclassOf<AABasicAttackProjectile> ProjectileClass;

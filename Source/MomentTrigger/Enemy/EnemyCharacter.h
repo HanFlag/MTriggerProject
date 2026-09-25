@@ -9,6 +9,8 @@
 
 class UAbilitySystemComponent;
 class UMomentTriggerAttributeSet;
+class UGameplayEffect;
+class UGameplayAbility;
 
 
 UCLASS()
@@ -55,12 +57,13 @@ public:
 	FVector ChargeDirection;
 	//돌진 중인지?
 	bool bIsCharging = false;
+	//공격 중인지?
+	bool bIsAttacking = false;
 	//돌진 중 문을 쳤는지?
-	bool bDoorHitPending = false;
+	bool bChargeHitPendding = false;
 	//돌진 데미지
 	UPROPERTY(EditDefaultsOnly, Category = "Enemy")
 	float ChargeDamage = 30.0f;
-	
 	
 	float DefaultWalkSpeed = 0.0f;
 	
@@ -77,8 +80,20 @@ public:
 	UAbilitySystemComponent* AbilitySystemComp;
 	UPROPERTY()
 	UMomentTriggerAttributeSet* AttributeSet;
-	
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy")
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
 	UFUNCTION()
 	void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+	
+	void EndChargeEarly();
+	// 소형 적은 돌진이 막히도록 설정하고 대형 적은 플레이어에게 돌진 데미지를 주는 동시에 돌진 지속하는 패턴설정용
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy")
+	bool bStopChargeOnHitPlayer = true;
+	
+	UPROPERTY(EditDefaultsOnly, Category= "Enemy")
+	TSubclassOf<UGameplayAbility> BasicAttackClass;
+	
+	
+	
 
 };

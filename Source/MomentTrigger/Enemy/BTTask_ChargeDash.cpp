@@ -34,9 +34,9 @@ void UBTTask_ChargeDash::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 	{
 		return;
 	}
-	if (EnemyCharacter->bDoorHitPending == true)
+	if (EnemyCharacter->bChargeHitPendding == true)
 	{
-		EnemyCharacter->bDoorHitPending = false;
+		EnemyCharacter->bChargeHitPendding = false;
 		return FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 	else
