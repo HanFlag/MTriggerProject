@@ -6,7 +6,6 @@
 #include <rapidjson/document.h>
 #include "EngineUtils.h"
 #include "KarakuriGhostActor.h"
-#include "VerseVM/VVMVerseEnum.h"
 
 
 UKarakuriPlacementComponent::UKarakuriPlacementComponent()
