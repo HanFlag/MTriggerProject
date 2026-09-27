@@ -94,6 +94,9 @@ public:
 	bool bCanAttack = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float MinAttackInterval = 0.3f;
+	
+	// 중복 처리 방지용
+	bool bIsDead = false;
 
 	
  	protected:
@@ -101,6 +104,11 @@ public:
 	// 따라서 블루프린트 내에서 수정할 수 있게 UPROPERTY를 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilitySystem")
 	EGameplayEffectReplicationMode AscReplicationMode = EGameplayEffectReplicationMode::Mixed;
+	
+	void HandleDeath(AActor* DeadActor);
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "Combat")
+	void OnDeath();
 	
 private:
 	bool bIsDecelerationActive = false;

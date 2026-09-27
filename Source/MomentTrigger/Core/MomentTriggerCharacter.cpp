@@ -63,6 +63,10 @@ AMomentTriggerCharacter::AMomentTriggerCharacter()
 void AMomentTriggerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	if (AttributeSet)
+	{
+		AttributeSet->OnHealthDepleted.AddUObject(this, &AMomentTriggerCharacter::HandleDeath);
+	}
 	
 }
 
@@ -216,6 +220,29 @@ void AMomentTriggerCharacter::AttackInput()
 UAbilitySystemComponent* AMomentTriggerCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComp;
+}
+
+void AMomentTriggerCharacter::HandleDeath(AActor* DeadActor)
+{
+	if (bIsDead)
+	{
+		return;
+	}
+	bIsDead = true;
+	UE_LOG(LogTemp, Warning, TEXT("Dead  %d"), bIsDead);
+	if (AbilitySystemComp)
+	{
+		AbilitySystemComp->CancelAbilities();
+	}
+	GetCharacterMovement()->DisableMovement();
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (PlayerController)
+	{
+		PlayerController->DisableInput(PlayerController);
+		DisableInput(PlayerController);
+	}
+	
+	OnDeath();
 }
 
 
