@@ -6,18 +6,18 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "ABasicAttackProjectile.generated.h"
+#include "BasicAttackProjectile.generated.h"
 
 class UGameplayEffect;
 
 UCLASS()
-class MOMENTTRIGGER_API AABasicAttackProjectile : public AActor
+class MOMENTTRIGGER_API ABasicAttackProjectile : public AActor
 {
 	GENERATED_BODY()
 	
 public:
 	// Sets default values for this actor's properties
-	AABasicAttackProjectile();
+	ABasicAttackProjectile();
 	
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* CollisionComp;

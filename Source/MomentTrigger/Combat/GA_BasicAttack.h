@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ABasicAttackProjectile.h"
+#include "BasicAttackProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Abilities/GameplayAbility.h"
 #include "MomentTriggerGameplayTags.h"
@@ -30,7 +30,7 @@ public:
 	// FName HitNotifyName = TEXT("Hit");
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
-	TSubclassOf<AABasicAttackProjectile> ProjectileClass;
+	TSubclassOf<ABasicAttackProjectile> ProjectileClass;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	TArray<FName> ComboSockets;

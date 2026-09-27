@@ -3,7 +3,7 @@
 
 #include "GA_BasicAttack.h"
 
-#include "ABasicAttackProjectile.h"
+#include "BasicAttackProjectile.h"
 #include "Core/MomentTriggerCharacter.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
@@ -74,7 +74,7 @@ void UGA_BasicAttack::OnHitEventReceived(FGameplayEventData Payload)
 	SpawnParams.Owner = Avatar;
 	SpawnParams.Instigator = Cast<APawn>(Avatar);
 	
-	Avatar->GetWorld()->SpawnActor<AABasicAttackProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+	Avatar->GetWorld()->SpawnActor<ABasicAttackProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
 	
 }
 
