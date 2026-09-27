@@ -3,7 +3,6 @@
 
 #include "KarakuriPlacementComponent.h"
 
-#include <rapidjson/document.h>
 #include "EngineUtils.h"
 #include "KarakuriGhostActor.h"
 
