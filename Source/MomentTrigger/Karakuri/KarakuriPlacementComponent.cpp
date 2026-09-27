@@ -375,20 +375,21 @@ void UKarakuriPlacementComponent::SpawnKarakuriActor()
 			NewKarakuri->Tags.Add(TEXT("KarakuriGround"));
 			NewKarakuri->SetActorLocation(GhostActor->GetActorLocation());
 			NewKarakuri->SetActorRotation(GhostActor->GetActorRotation());
+			if (!bIsSnapLocked)
+			{
+				OriginLocation = NewKarakuri->GetActorLocation();
+				OriginRotation = NewKarakuri->GetActorRotation();
+				NewKarakuri->SetClusterInfo(OriginLocation, OriginRotation, 0);
+				PlacementCount = 1;
+			}
+			else
+			{
+				PlacementCount++;
+				NewKarakuri->SetClusterInfo(OriginLocation, OriginRotation, PlacementCount - 1);
+				TryCompleteDoorRecipe();
+			}
 		}
-		if (!bIsSnapLocked)
-		{
-			OriginLocation = NewKarakuri->GetActorLocation();
-			OriginRotation = NewKarakuri->GetActorRotation();
-			NewKarakuri->SetClusterInfo(OriginLocation, OriginRotation, 0);
-			PlacementCount = 1;
-		}
-		else
-		{
-			PlacementCount++;
-			NewKarakuri->SetClusterInfo(OriginLocation, OriginRotation, PlacementCount - 1);
-			TryCompleteDoorRecipe();
-		}
+		
 	}
 
 	
