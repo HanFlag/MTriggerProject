@@ -8,7 +8,7 @@
 #include "InputMappingContext.h"
 #include "MomentTriggerPlayerController.generated.h"
 
-
+class UHealthBarWidget;
 class UUserWidget;
 /**
  * 
@@ -44,7 +44,13 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* KarakuriToggle;
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UHealthBarWidget> HealthBarWidgetClass;
+	UPROPERTY()
+	UHealthBarWidget* HealthBarWidget;
 	
+	
+	virtual void OnPossess(APawn* InPawn) override;
 	
 	
 	void Move(const FInputActionValue& Value);

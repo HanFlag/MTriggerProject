@@ -29,7 +29,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_Health)
 	FGameplayAttributeData Health;
 	ATTRIBUTE_ACCESSORS(UMomentTriggerAttributeSet, Health);
-	
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_MaxHealth)
+	FGameplayAttributeData MaxHealth;
+	ATTRIBUTE_ACCESSORS(UMomentTriggerAttributeSet,MaxHealth);
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	FOnHealthDepleted OnHealthDepleted;
@@ -38,4 +40,6 @@ public:
 	
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth);
+	UFUNCTION()
+	void OnRep_MaxHealth(const FGameplayAttributeData& OldHealth);
 };

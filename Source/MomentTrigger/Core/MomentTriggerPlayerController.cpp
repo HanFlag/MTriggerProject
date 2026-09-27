@@ -2,12 +2,15 @@
 
 
 #include "MomentTriggerPlayerController.h"
+
+#include "AbilitySystemGlobals.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "MomentTriggerCharacter.h"
 #include "Karakuri/KarakuriPlacementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "UI/HealthBarWidget.h"
 
 
 AMomentTriggerPlayerController::AMomentTriggerPlayerController()
@@ -56,6 +59,23 @@ void AMomentTriggerPlayerController::SetupInputComponent()
 void AMomentTriggerPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AMomentTriggerPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	if (!HealthBarWidgetClass || HealthBarWidget)
+	{
+		return;
+	}
+	HealthBarWidget = CreateWidget<UHealthBarWidget>(this,HealthBarWidgetClass);
+	HealthBarWidget->AddToViewport();
+	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(InPawn);
+	if (!ASC)
+	{
+		return;
+	}
+	HealthBarWidget->InitWithASC(ASC);
 }
 
 void AMomentTriggerPlayerController::Move(const FInputActionValue& Value)
