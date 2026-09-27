@@ -16,6 +16,6 @@ class MOMENTTRIGGER_API UGE_TestDamage : public UGameplayEffect
 	GENERATED_BODY()
 	
 public:
-	UGE_TestDamage();
+	//UGE_TestDamage();
 	
 };

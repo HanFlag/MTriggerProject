@@ -5,14 +5,14 @@
 
 
 
-UGE_TestDamage::UGE_TestDamage()
-{
-	DurationPolicy = EGameplayEffectDurationType::Instant;
-	
-	FGameplayModifierInfo ModifierInfo;
-	ModifierInfo.Attribute = UMomentTriggerAttributeSet::GetHealthAttribute();
-	ModifierInfo.ModifierOp = EGameplayModOp::Additive;
-	ModifierInfo.ModifierMagnitude = FScalableFloat(-10.0f);
-	
-	Modifiers.Add(ModifierInfo);
-}
+// UGE_TestDamage::UGE_TestDamage()
+// {
+// 	DurationPolicy = EGameplayEffectDurationType::Instant;
+// 	
+// 	FGameplayModifierInfo ModifierInfo;
+// 	ModifierInfo.Attribute = UMomentTriggerAttributeSet::GetHealthAttribute();
+// 	ModifierInfo.ModifierOp = EGameplayModOp::Additive;
+// 	ModifierInfo.ModifierMagnitude = FScalableFloat(-10.0f);
+// 	
+// 	Modifiers.Add(ModifierInfo);
+// }
