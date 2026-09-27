@@ -3,18 +3,14 @@
 
 #include "GA_EnemyBasicAttack.h"
 
-#include "AbilitySystemGlobals.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
-#include "AbilityTask_PlayAnimAndWait.h"
+#include "MomentTriggerCombatLibrary.h"
 #include "Combat/GA_BasicAttack.h"
 #include "Enemy/EnemyCharacter.h"
-#include "Kismet/KismetStringLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-void UGA_EnemyBasicAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
-                                           const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-                                           const FGameplayEventData* TriggerEventData)
+void UGA_EnemyBasicAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
@@ -47,33 +43,13 @@ void UGA_EnemyBasicAttack::OnHitEventReceived(FGameplayEventData Payload)
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	TArray<AActor*> OutActors;
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
 	AActor* Avatar = CurrentActorInfo->AvatarActor.Get();
 	//전방 범위 액터 찾기
 	UKismetSystemLibrary::SphereOverlapActors(this, Avatar->GetActorLocation() + Avatar->GetActorForwardVector() * AttackRange,AttackRange,ObjectTypes,nullptr, {Avatar},OutActors);
-	UAbilitySystemComponent* EnemyASC = Cast<AEnemyCharacter>(Avatar)->AbilitySystemComp;
-	if (!EnemyASC)
-	{
-		return;
-	}
 	for (AActor* HitActor : OutActors)
 	{
-		UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(HitActor);
-		if (!TargetASC)
-		{
-			continue;
-		}
-		
-		FGameplayEffectContextHandle ContextHandle = EnemyASC->MakeEffectContext();
-		FGameplayEffectSpecHandle SpecHandle = EnemyASC->MakeOutgoingSpec(DamageEffectClass, 1.0f, ContextHandle);
-		if (!SpecHandle.IsValid())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("DamageEffectClass is not valid"));
-		}
-		else
-		{
-			SpecHandle.Data->SetSetByCallerMagnitude(TAG_Data_Damage, -AttackDamage);
-			EnemyASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
-		}
+		UMomentTriggerCombatLibrary::ApplyDamage(Avatar, HitActor, AttackDamage, DamageEffectClass);
 	}
 	
 	

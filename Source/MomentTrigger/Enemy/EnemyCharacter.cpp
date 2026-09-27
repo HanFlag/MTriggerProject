@@ -9,10 +9,10 @@
 #include "Combat/MomentTriggerAttributeSet.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Combat/MomentTriggerCombatLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "Combat/MomentTriggerGameplayTags.h"
+#include "Karakuri/BaseKarakuriActor.h"
 #include "Abilities/GameplayAbility.h"
-#include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
@@ -95,7 +95,15 @@ void AEnemyCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector Norma
 	if (OtherActor && OtherActor->ActorHasTag(TEXT("KarakuriDoor")))
 	{
 		EndChargeEarly();
-		OtherActor->TakeDamage(ChargeDamage, FDamageEvent(), GetController(), this);
+		//문이 돌진 데미지보다 HP가 낮으면 뚫려서 돌진이 관통하고 지속적으로 플레이어에게 돌진하는걸 고려해야함
+		ABaseKarakuriActor* Karakuri = Cast<ABaseKarakuriActor>(OtherActor);
+		if (!Karakuri)
+		{
+			return;
+		}
+		float CounterDealt = UMomentTriggerCombatLibrary::ApplyDamage(Karakuri, this, Karakuri->CounterDamage, DamageEffectClass);
+		UE_LOG(LogTemp, Warning, TEXT("Door Counter Damage: %f"), CounterDealt)
+		UMomentTriggerCombatLibrary::ApplyDamage(this, OtherActor, ChargeDamage, DamageEffectClass);
 		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("HitActor %s"), *OtherActor->GetActorLabel());
 	}
@@ -110,20 +118,7 @@ void AEnemyCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector Norma
 		{
 			EndChargeEarly();	
 		}
-		
-		//ContextHandle == 데미지를 누가 유발했는지
-		FGameplayEffectContextHandle ContextHandle = AbilitySystemComp->MakeEffectContext();
-		FGameplayEffectSpecHandle SpecHandle = AbilitySystemComp->MakeOutgoingSpec(DamageEffectClass, 1.0f,ContextHandle);
-		if (!SpecHandle.IsValid())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("DamageEffectClass is not valid"));
-		}
-		else
-		{
-			SpecHandle.Data->SetSetByCallerMagnitude(TAG_Data_Damage, -ChargeDamage);
-			//호출 주체는 공격을 가한 쪽
-			AbilitySystemComp->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), PlayerASC);
-		}
+		UMomentTriggerCombatLibrary::ApplyDamage(this, OtherActor, ChargeDamage, DamageEffectClass);
 		
 	}
 }

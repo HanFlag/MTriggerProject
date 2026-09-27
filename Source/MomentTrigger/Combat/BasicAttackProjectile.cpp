@@ -3,9 +3,8 @@
 
 #include "BasicAttackProjectile.h"
 #include "AbilitySystemComponent.h"
-#include "GameplayEffect.h"
-#include "Combat/MomentTriggerGameplayTags.h"
 #include "AbilitySystemGlobals.h"
+#include "MomentTriggerCombatLibrary.h"
 
 // Sets default values
 ABasicAttackProjectile::ABasicAttackProjectile()
@@ -37,18 +36,7 @@ void ABasicAttackProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 		UAbilitySystemComponent* HitOtherActor = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OtherActor);
 		if (Player && HitOtherActor)
 		{
-			FGameplayEffectContextHandle ContextHandle = Player->MakeEffectContext();
-			FGameplayEffectSpecHandle SpecHandle = Player->MakeOutgoingSpec(DamageEffectClass, 1.0f, ContextHandle);
-			if (!SpecHandle.IsValid())
-			{
-				UE_LOG(LogTemp, Warning, TEXT("DamageEffectClass is not valid"));
-			}
-			else
-			{
-				SpecHandle.Data->SetSetByCallerMagnitude(TAG_Data_Damage, -DamageAmount);
-				Player->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), HitOtherActor);
-			}
-			
+			UMomentTriggerCombatLibrary::ApplyDamage(GetInstigator(), OtherActor, DamageAmount, DamageEffectClass);
 		}
 		UE_LOG(LogTemp, Warning, TEXT("Hit %s"), *OtherActor->GetName());
 		Destroy();

@@ -39,6 +39,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Karakuri")
 	float MaxHP = 30.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Karakuri")
+	float CounterDamage = 0.0f;
+	
 	//중복 파괴 방지
 	bool bIsDestroyed = false;
 	
