@@ -90,3 +90,15 @@ Content/MyStuff/Animation/CastLower.uasset
 Content/MyStuff/Animation/CastRaise.uasset
 Content/MyStuff/FXAndProjectile/P_Gideon_Burden_Projectile.uasset
 Content/MyStuff/Animation/Gideon_AnimBlueprintForMyFolder.uasset
+
+# Own assets that reference Paragon / SteampunkCat content (kept local)
+Content/MyStuff/Animation/ABP_GideonAnimBP.uasset
+Content/MyStuff/Animation/BS_GIdeonMovementBS.uasset
+Content/MyStuff/Animation/BS_GldeonConstructionBS.uasset
+Content/MyStuff/Animation/MT_EnemySPCatBasicAttack.uasset
+Content/MyStuff/Animation/MT_EnemySPCatBasicAttack1.uasset
+Content/MyStuff/Animation/MT_BasicAttack.uasset
+Content/MyStuff/Animation/MT_BasicAttack1.uasset
+Content/MyStuff/Animation/MT_BasicAttack2.uasset
+Content/MyStuff/Animation/MT_BasicAttack3.uasset
+Content/MyStuff/EnemyCharacter/BP_SteampunkCat1.uasset
