@@ -76,3 +76,6 @@ DerivedDataCache/*
 
 *.idea
 Content/ParagonGideon/*
+
+# Claude session docs (local only)
+claude/
