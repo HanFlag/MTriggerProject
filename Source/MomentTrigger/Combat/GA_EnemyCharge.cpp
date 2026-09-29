@@ -47,7 +47,7 @@ void UGA_EnemyCharge::OnWindupBlendOut()
 	Avatar->SetActorRotation(ChargeDirection.Rotation());
 	UAbilityTask_PlayMontageAndWait* LoopMontagePlay = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, LoopMontage);
 	LoopMontagePlay->ReadyForActivation();
-	UAbilityTask_ApplyRootMotionConstantForce* DashTask = UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce(this, NAME_None, ChargeDirection,ChargeSpeed, ChargeDuration, false, nullptr, ERootMotionFinishVelocityMode::ClampVelocity, FVector::ZeroVector, ChargeSlideSpeed, true);
+	UAbilityTask_ApplyRootMotionConstantForce* DashTask = UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce(this, NAME_None, ChargeDirection,ChargeSpeed, ChargeDuration, false, nullptr, ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity, FVector::ZeroVector, 0.0f, true);
 	if (!DashTask)
 	{
 		OnChargeCancelled();
@@ -74,6 +74,8 @@ void UGA_EnemyCharge::OnDashFinished()
 	StopMT->OnInterrupted.AddDynamic(this, &UGA_EnemyCharge::OnChargeEndMontageFinished);
 	StopMT->OnCancelled.AddDynamic(this, &UGA_EnemyCharge::OnChargeEndMontageFinished);
 	StopMT->ReadyForActivation();
+	UAbilityTask_ApplyRootMotionConstantForce* SlideTask = UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce(this, NAME_None, ChargeDirection, ChargeSlideSpeed, SlideDuration, false, SlideCurve,ERootMotionFinishVelocityMode::SetVelocity, FVector::ZeroVector, 0.0f, true);
+	SlideTask->ReadyForActivation();
 }
 
 void UGA_EnemyCharge::OnChargeEndMontageFinished()

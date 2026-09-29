@@ -91,6 +91,8 @@ public:
 	bool bStopChargeOnHitPlayer = true;
 	
 	UPROPERTY(EditDefaultsOnly, Category= "Enemy")
+	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
+	UPROPERTY(EditDefaultsOnly, Category= "Enemy")
 	TSubclassOf<UGameplayAbility> BasicAttackClass;
 	
 	

@@ -8,6 +8,7 @@
 
 class UAnimMontage;
 class UGameplayEffect;
+class UCurveFloat;
 /**
  * 
  */
@@ -27,6 +28,10 @@ public:
 	float ChargeDuration = 1.0f;
 	UPROPERTY(EditDefaultsOnly, Category = "Charge")
 	float ChargeDamage = 30.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Charge")
+	float SlideDuration = 0.5f;
+	UPROPERTY(EditDefaultsOnly, Category = "Charge")
+	UCurveFloat* SlideCurve;
 	UPROPERTY(EditDefaultsOnly, Category = "Charge")
 	bool bStopChargeOnHitPlayer = true;
 	UPROPERTY(EditDefaultsOnly, Category = "Charge")

@@ -39,6 +39,13 @@ void AEnemyCharacter::BeginPlay()
 	{
 		AbilitySystemComp->GiveAbility(FGameplayAbilitySpec(BasicAttackClass, 1, INDEX_NONE, this));
 	}
+	for (TSubclassOf<UGameplayAbility> AbilityClass : StartupAbilities)
+	{
+		if (AbilityClass)
+		{
+			AbilitySystemComp->GiveAbility(FGameplayAbilitySpec(AbilityClass, 1, INDEX_NONE, this));
+		}
+	}
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	OnActorHit.AddDynamic(this, &AEnemyCharacter::OnHit);
 }
