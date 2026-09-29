@@ -66,7 +66,7 @@ public:
 	float ChargeDamage = 30.0f;
 	
 	float DefaultWalkSpeed = 0.0f;
-	
+
 	
 	bool bIsDead = false;
 	

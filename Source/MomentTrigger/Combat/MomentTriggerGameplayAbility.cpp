@@ -2,7 +2,6 @@
 
 
 #include "MomentTriggerGameplayAbility.h"
-#include "Misc/DataValidation.h"
 #include "MomentTriggerGameplayTags.h"
 
 const FGameplayTagContainer* UMomentTriggerGameplayAbility::GetCooldownTags() const
@@ -36,6 +35,7 @@ void UMomentTriggerGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHand
 	}
 }
 #if WITH_EDITOR
+#include "Misc/DataValidation.h"
 EDataValidationResult UMomentTriggerGameplayAbility::IsDataValid(class FDataValidationContext& Context) const
 {
 	EDataValidationResult Result = Super::IsDataValid(Context);

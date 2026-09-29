@@ -8,6 +8,7 @@ UE_DEFINE_GAMEPLAY_TAG(TAG_Cooldown_Ability_Test, "Cooldown.Ability.Test")
 UE_DEFINE_GAMEPLAY_TAG(TAG_Data_Damage, "Data.Damage")
 UE_DEFINE_GAMEPLAY_TAG(TAG_Cooldown_Enemy_Charge, "Cooldown.Enemy.Charge")
 UE_DEFINE_GAMEPLAY_TAG(TAG_Data_Cooldown, "Data.Cooldown")
+UE_DEFINE_GAMEPLAY_TAG(TAG_State_Charge_Aiming, "State.Charge.Aiming")
 
 MomentTriggerGameplayTags::MomentTriggerGameplayTags()
 {

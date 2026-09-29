@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "MomentTriggerGameplayAbility.h"
 #include "GA_EnemyCharge.generated.h"
-
+class UAbilityTask_RotateToTarget;
 class UAnimMontage;
 class UGameplayEffect;
 class UCurveFloat;
@@ -46,20 +46,31 @@ public:
 	UAnimMontage* KnockDownMontage;
 	UPROPERTY(EditDefaultsOnly, Category = "Charge")
 	UAnimMontage* GetUpMontage;
+	//조준 구간 길이
+	UPROPERTY(EditDefaultsOnly, Category = "Charge")
+	float ChargeAimDuration = 1.5f;
+	//회전속도
+	UPROPERTY(EditDefaultsOnly, Category = "Charge")
+	float WindupTurnRate = 180.0f;
+	UPROPERTY()
+	UAbilityTask_RotateToTarget* RotateTask;
+	
 	
 	
 	UFUNCTION()
-	void OnWindupBlendOut();
+	void OnStartAim();
 	UFUNCTION()
 	void OnDashFinished();
 	UFUNCTION()
 	void OnChargeEndMontageFinished();
 	UFUNCTION()
 	void OnChargeCancelled();
-	
+	UFUNCTION()
+	void OnAimFinished();
 protected:
 	FVector ChargeDirection;
 	
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 	
 	
 
