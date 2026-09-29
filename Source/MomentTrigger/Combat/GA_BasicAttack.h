@@ -20,8 +20,10 @@ class MOMENTTRIGGER_API UGA_BasicAttack : public UGameplayAbility
 {
 	GENERATED_BODY()
 	
-public:
+protected:
+	
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+public:
 	
 	// UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	// UAnimMontage* AttackMontage;
