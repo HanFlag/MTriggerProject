@@ -79,3 +79,13 @@ Content/ParagonGideon/*
 
 # Claude session docs (local only)
 claude/
+
+# Third-party (Fab / Paragon) assets and derivatives - not redistributable
+Content/Sabertooth/
+Content/MyStuff/SteampunkCat_Animation/
+Content/MyStuff/Animation/Primary_Attack_A_MediumCustom.uasset
+Content/MyStuff/Animation/Primary_Attack_B_MediumCustom.uasset
+Content/MyStuff/Animation/Primary_Attack_C_MediumCustom.uasset
+Content/MyStuff/Animation/CastLower.uasset
+Content/MyStuff/Animation/CastRaise.uasset
+Content/MyStuff/FXAndProjectile/P_Gideon_Burden_Projectile.uasset
