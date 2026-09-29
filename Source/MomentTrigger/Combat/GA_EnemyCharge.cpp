@@ -9,6 +9,11 @@
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
 #include "GameFramework/RootMotionSource.h"
+#include "Combat/MomentTriggerCombatLibrary.h"
+#include "Karakuri/BaseKarakuriActor.h"
+#include "AbilitySystemGlobals.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Combat/AbilityTask_RotateToTarget.h"
 #include "Kismet/GameplayStatics.h" 
 
@@ -67,6 +72,16 @@ void UGA_EnemyCharge::OnStartAim()
 
 void UGA_EnemyCharge::OnDashFinished()
 {
+	if (!bIsDashing)
+	{
+		return;
+	}
+	bIsDashing = false;
+	AActor* Avatar = GetAvatarActorFromActorInfo();
+	if (Avatar)
+	{
+		Avatar->OnActorHit.RemoveDynamic(this, &UGA_EnemyCharge::OnChargeHit);
+	}
 	if (!StopMontage)
 	{
 		OnChargeEndMontageFinished();
@@ -110,7 +125,7 @@ void UGA_EnemyCharge::OnAimFinished()
 		RotateTask->EndTask();
 		RotateTask = nullptr;
 	}
-	AActor* Avatar = CurrentActorInfo->AvatarActor.Get();
+	AActor* Avatar = GetAvatarActorFromActorInfo();
 	if (!Avatar)
 	{
 		OnChargeCancelled();
@@ -121,7 +136,7 @@ void UGA_EnemyCharge::OnAimFinished()
 	ChargeDirection = TempForwardVector.GetSafeNormal();
 	UAbilityTask_PlayMontageAndWait* LoopMontagePlay = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, LoopMontage);
 	LoopMontagePlay->ReadyForActivation();
-	UAbilityTask_ApplyRootMotionConstantForce* DashTask = UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce(this, NAME_None, ChargeDirection,ChargeSpeed, ChargeDuration, false, nullptr, ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity, FVector::ZeroVector, 0.0f, true);
+	DashTask = UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce(this, NAME_None, ChargeDirection,ChargeSpeed, ChargeDuration, false, nullptr, ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity, FVector::ZeroVector, 0.0f, true);
 	if (!DashTask)
 	{
 		OnChargeCancelled();
@@ -129,6 +144,9 @@ void UGA_EnemyCharge::OnAimFinished()
 	}
 	DashTask->OnFinish.AddDynamic(this, &UGA_EnemyCharge::OnDashFinished);
 	DashTask->ReadyForActivation();	
+	bIsDashing = true;
+	bHitPlayerThisCharge = false;
+	Avatar->OnActorHit.AddUniqueDynamic(this, &UGA_EnemyCharge::OnChargeHit);
 }
 
 void UGA_EnemyCharge::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -139,5 +157,99 @@ void UGA_EnemyCharge::EndAbility(const FGameplayAbilitySpecHandle Handle, const 
 	{
 	AvatarASC->SetLooseGameplayTagCount(TAG_State_Charge_Aiming, 0);
 	}
+	AActor* Avatar = GetAvatarActorFromActorInfo();
+	if (Avatar)
+	{
+		Avatar->OnActorHit.RemoveDynamic(this, &UGA_EnemyCharge::OnChargeHit);
+	}
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+void UGA_EnemyCharge::OnChargeHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
+{
+	AActor* Avatar = GetAvatarActorFromActorInfo();
+	
+	if (!bIsDashing || !OtherActor || !Avatar)
+	{
+		return;
+	}
+	if (OtherActor->ActorHasTag(TEXT("KarakuriDoor")))
+	{
+		ABaseKarakuriActor* Karakuri = Cast<ABaseKarakuriActor>(OtherActor);
+		
+		if (Karakuri)
+		{
+			float CounterDealt = UMomentTriggerCombatLibrary::ApplyDamage(
+				Karakuri, Avatar, Karakuri->CounterDamage, DamageEffectClass);
+			UE_LOG(LogTemp, Warning, TEXT("Door Counter Damage: %f"), CounterDealt)
+		}
+		UMomentTriggerCombatLibrary::ApplyDamage(Avatar, OtherActor, ChargeDamage, DamageEffectClass);
+		StopDash();
+		UAbilityTask_PlayMontageAndWait* KnockDownTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
+			this, NAME_None, KnockDownMontage);
+		if (!KnockDownTask)
+		{
+			OnKnockdownFinished();
+			return;
+		}
+		KnockDownTask->OnCancelled.AddDynamic(this, &UGA_EnemyCharge::OnKnockdownFinished);
+		KnockDownTask->OnBlendOut.AddDynamic(this, &UGA_EnemyCharge::OnKnockdownFinished);
+		KnockDownTask->OnInterrupted.AddDynamic(this, &UGA_EnemyCharge::OnKnockdownFinished);
+		KnockDownTask->ReadyForActivation();
+		return;
+	}
+	UAbilitySystemComponent* OtherActorASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OtherActor);
+	if (OtherActorASC)
+	{
+		if (bHitPlayerThisCharge)
+		{
+			return;
+		}
+		bHitPlayerThisCharge = true;
+		UMomentTriggerCombatLibrary::ApplyDamage(Avatar, OtherActor, ChargeDamage, DamageEffectClass);
+		if (bStopChargeOnHitPlayer)
+		{
+			StopDash();
+			OnChargeEndMontageFinished();
+		}
+	}
+}
+
+void UGA_EnemyCharge::OnKnockdownFinished()
+{
+	UAbilityTask_PlayMontageAndWait* GetupTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, GetUpMontage);
+	if (GetupTask)
+	{
+		GetupTask->OnCancelled.AddDynamic(this, &UGA_EnemyCharge::OnChargeEndMontageFinished);
+		GetupTask->OnCompleted.AddDynamic(this, &UGA_EnemyCharge::OnChargeEndMontageFinished);
+		GetupTask->OnInterrupted.AddDynamic(this, &UGA_EnemyCharge::OnChargeEndMontageFinished);
+		GetupTask->ReadyForActivation();
+	}
+	else
+	{
+		OnChargeEndMontageFinished();
+	}
+	
+	
+}
+
+void UGA_EnemyCharge::StopDash()
+{
+	bIsDashing = false;
+	AActor* Avatar = GetAvatarActorFromActorInfo();
+	if (!Avatar)
+	{
+		return;
+	}
+	Avatar->OnActorHit.RemoveDynamic(this, &UGA_EnemyCharge::OnChargeHit);
+	if (DashTask)
+	{
+		DashTask->EndTask();
+		DashTask = nullptr;
+	}
+	ACharacter* Character = Cast<ACharacter>(Avatar);
+	if (Character)
+	{
+		Character->GetCharacterMovement()->StopMovementImmediately();
+	}
 }

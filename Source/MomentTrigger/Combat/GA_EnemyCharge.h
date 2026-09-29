@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "MomentTriggerGameplayAbility.h"
 #include "GA_EnemyCharge.generated.h"
+class UAbilityTask_ApplyRootMotionConstantForce;
 class UAbilityTask_RotateToTarget;
 class UAnimMontage;
 class UGameplayEffect;
@@ -72,6 +73,17 @@ protected:
 	
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 	
+	UPROPERTY()
+	UAbilityTask_ApplyRootMotionConstantForce* DashTask;
+	bool bIsDashing = false;
+	bool bHitPlayerThisCharge = false;
+	
+	
+	UFUNCTION()
+	void OnChargeHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+	UFUNCTION()
+	void OnKnockdownFinished();
+	void StopDash();
 	
 
 	
