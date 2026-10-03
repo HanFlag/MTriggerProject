@@ -12,7 +12,6 @@ static void UpdateTrackPlayerData(FSTTask_TrackPlayerInstanceData& Data)
 	Data.PlayerActor = nullptr;
 	Data.DistanceToPlayer = 0.0f;
 	Data.bPlayerAlive = false;
-	Data.HomeLocation = FVector(0.0f, 0.0f, 0.0f);
 	
 	if (!Data.Actor)
 	{
@@ -25,7 +24,6 @@ static void UpdateTrackPlayerData(FSTTask_TrackPlayerInstanceData& Data)
 	}
 	Data.DistanceToPlayer = FVector::Dist2D(Data.Actor->GetActorLocation(), Player->GetActorLocation());
 	Data.PlayerActor = Player;
-	Data.HomeLocation = Data.Actor->GetActorLocation();
 	AMomentTriggerCharacter* PlayerCharacter = Cast<AMomentTriggerCharacter>(Player);
 	if (PlayerCharacter && !PlayerCharacter->bIsDead)
 	{
@@ -42,6 +40,11 @@ EStateTreeRunStatus FSTTask_TrackPlayer::EnterState(FStateTreeExecutionContext& 
 {
 	FInstanceDataType& Data = Context.GetInstanceData(*this);
 	UpdateTrackPlayerData(Data);
+	if (Data.Actor)
+	{
+		Data.HomeLocation = Data.Actor->GetActorLocation();
+	}
+	
 	return EStateTreeRunStatus::Running;
 	
 	

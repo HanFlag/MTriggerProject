@@ -27,7 +27,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Output")
 	bool bPlayerAlive = false;
 	UPROPERTY(EditAnywhere, Category = "Output")
-	FVector HomeLocation;
+	FVector HomeLocation = FVector::ZeroVector;
 
 };
 
