@@ -12,23 +12,20 @@ static void UpdateTrackPlayerData(FSTTask_TrackPlayerInstanceData& Data)
 	Data.PlayerActor = nullptr;
 	Data.DistanceToPlayer = 0.0f;
 	Data.bPlayerAlive = false;
+	Data.HomeLocation = FVector(0.0f, 0.0f, 0.0f);
 	
-	if (!Data.AIController)
+	if (!Data.Actor)
 	{
 		return;
 	}
-	APawn* BossPawn = Data.AIController->GetPawn();
-	if (!BossPawn)
-	{
-		return;
-	}
-	APawn* Player = UGameplayStatics::GetPlayerPawn(BossPawn, 0);
+	APawn* Player = UGameplayStatics::GetPlayerPawn(Data.Actor, 0);
 	if (!Player)
 	{
 		return;
 	}
-	Data.DistanceToPlayer = FVector::Dist2D(BossPawn->GetActorLocation(), Player->GetActorLocation());
+	Data.DistanceToPlayer = FVector::Dist2D(Data.Actor->GetActorLocation(), Player->GetActorLocation());
 	Data.PlayerActor = Player;
+	Data.HomeLocation = Data.Actor->GetActorLocation();
 	AMomentTriggerCharacter* PlayerCharacter = Cast<AMomentTriggerCharacter>(Player);
 	if (PlayerCharacter && !PlayerCharacter->bIsDead)
 	{

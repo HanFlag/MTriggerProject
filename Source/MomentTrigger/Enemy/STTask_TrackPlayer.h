@@ -18,14 +18,17 @@ struct FSTTask_TrackPlayerInstanceData
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, Category = "Context")
-	TObjectPtr<AAIController> AIController = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<AActor> Actor = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Output")
 	TObjectPtr<AActor> PlayerActor = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Output")
 	float DistanceToPlayer = 0.0f;
 	UPROPERTY(EditAnywhere, Category = "Output")
 	bool bPlayerAlive = false;
+	UPROPERTY(EditAnywhere, Category = "Output")
+	FVector HomeLocation;
+
 };
 
 USTRUCT(meta = (DisplayName = "Track Player", Category = "AI"))
