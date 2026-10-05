@@ -14,7 +14,7 @@ public class MomentTrigger : ModuleRules
 		// path, so cross-folder includes like "Core/MomentTriggerCharacter.h" fail with C1083.
 		bLegacyPublicIncludePaths = true;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput","GameplayAbilities", "GameplayTasks", "GameplayTags", "StateTreeModule", "GameplayStateTreeModule", "UMG"  });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput","GameplayAbilities", "GameplayTasks", "GameplayTags", "StateTreeModule", "GameplayStateTreeModule", "UMG", "MotionWarping"  });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 

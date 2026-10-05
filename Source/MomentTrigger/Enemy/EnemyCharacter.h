@@ -6,7 +6,7 @@
 #include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
-
+class UMotionWarpingComponent;
 class UAbilitySystemComponent;
 class UMomentTriggerAttributeSet;
 class UGameplayAbility;
@@ -47,10 +47,12 @@ public:
 	UPROPERTY()
 	UMomentTriggerAttributeSet* AttributeSet;
 	UPROPERTY(EditDefaultsOnly, Category= "Enemy")
-	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
+	TArray<TSubclassOf<UGameplayAbility>> 
+	StartupAbilities;
 	UPROPERTY(EditDefaultsOnly, Category= "Enemy")
 	TSubclassOf<UGameplayAbility> BasicAttackClass;
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UMotionWarpingComponent> MotionWarping;
 	
 	
 

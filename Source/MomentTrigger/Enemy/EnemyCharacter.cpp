@@ -5,6 +5,7 @@
 #include "AbilitySystemComponent.h"
 #include "AIController.h"
 #include "BrainComponent.h"
+#include "MotionWarpingComponent.h"
 #include "Combat/MomentTriggerAttributeSet.h"
 #include "Components/CapsuleComponent.h"
 #include "Abilities/GameplayAbility.h"
@@ -18,6 +19,7 @@ AEnemyCharacter::AEnemyCharacter()
 	AbilitySystemComp = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComp->SetIsReplicated(true);
 	AttributeSet = CreateDefaultSubobject<UMomentTriggerAttributeSet>(TEXT("AttributeSet"));
+	MotionWarping = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarping"));
 }
 
 // Called when the game starts or when spawned
