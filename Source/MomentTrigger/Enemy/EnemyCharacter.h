@@ -47,8 +47,7 @@ public:
 	UPROPERTY()
 	UMomentTriggerAttributeSet* AttributeSet;
 	UPROPERTY(EditDefaultsOnly, Category= "Enemy")
-	TArray<TSubclassOf<UGameplayAbility>> 
-	StartupAbilities;
+	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
 	UPROPERTY(EditDefaultsOnly, Category= "Enemy")
 	TSubclassOf<UGameplayAbility> BasicAttackClass;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
