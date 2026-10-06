@@ -39,8 +39,8 @@ EStateTreeRunStatus FSTTask_CircleStrafe::EnterState(FStateTreeExecutionContext&
 		Character->GetCharacterMovement()->MaxWalkSpeed = Data.TargetSpeed;
 		Data.SaveMaxAcceleration = Character->GetCharacterMovement()->MaxAcceleration;
 		Data.SaveBrakingDecelerationWalking = Character->GetCharacterMovement()->BrakingDecelerationWalking;
-		Character->GetCharacterMovement()->BrakingDecelerationWalking = Data.StrafeAcceleration;
-		Character->GetCharacterMovement()->MaxAcceleration = Data.StrafeBraking;
+		Character->GetCharacterMovement()->BrakingDecelerationWalking = Data.StrafeBraking;
+		Character->GetCharacterMovement()->MaxAcceleration = Data.StrafeAcceleration;
 	}
 	
 	return EStateTreeRunStatus::Running;
