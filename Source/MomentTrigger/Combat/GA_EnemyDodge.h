@@ -22,11 +22,18 @@ protected:
 	
 	public:
 	UPROPERTY(EditDefaultsOnly, Category = "Dodge")
-	UAnimMontage* DodgeMontage;
+	UAnimMontage* DodgeBackMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "Dodge")
+	UAnimMontage* DodgeLeftMontage;
+	UPROPERTY(EditDefaultsOnly, Category = "Dodge")
+	UAnimMontage* DodgeRightMontage;
 	UPROPERTY(EditDefaultsOnly, Category = "Dodge")
 	float DodgeDistance = 400.0f;
 	UPROPERTY(EditDefaultsOnly, Category = "Dodge")
 	float MoveDuration = 0.6f;
+	
+protected:
+	bool IsDodgePathClear(const FVector& Start, const FVector& End) const;
 	
 	
 };

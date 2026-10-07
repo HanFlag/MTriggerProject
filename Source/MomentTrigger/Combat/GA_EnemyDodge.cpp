@@ -6,6 +6,7 @@
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionMoveToForce.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "GameFramework/Character.h"
+#include "NavigationSystem.h"
 
 void UGA_EnemyDodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
@@ -13,7 +14,7 @@ void UGA_EnemyDodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	
-	if (!DodgeMontage || !CommitAbility( Handle, ActorInfo, ActivationInfo) )
+	if (!DodgeRightMontage ||!DodgeLeftMontage ||!DodgeBackMontage)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
@@ -24,18 +25,61 @@ void UGA_EnemyDodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-	FVector TargetPoint = Avatar->GetActorLocation() - Avatar->GetActorForwardVector() * DodgeDistance;
-	
-	UAbilityTask_PlayMontageAndWait* DodgeTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, DodgeMontage);
-	if (!DodgeTask)
+	FVector Feet = Avatar->GetNavAgentLocation();
+	FVector BackPoint = Feet - Avatar->GetActorForwardVector() * DodgeDistance;
+	FVector LeftPoint = Feet - Avatar->GetActorRightVector() * DodgeDistance;
+	FVector RightPoint = Feet + Avatar->GetActorRightVector() * DodgeDistance;
+	FVector ChosenFeet = FVector::ZeroVector;
+	UAnimMontage* ChosenMontage = nullptr;
+	// 닷지 , 좌우 Evade 결정 코드
+	if (IsDodgePathClear(Feet, BackPoint))
+	{
+		ChosenFeet = BackPoint;
+		ChosenMontage = DodgeBackMontage;
+	}
+	else
+	{
+		bool bLeftFirst = FMath::RandBool();
+		FVector FirstPoint = bLeftFirst ? LeftPoint : RightPoint;
+		UAnimMontage* FirstMontage = bLeftFirst ? DodgeLeftMontage : DodgeRightMontage;
+		FVector SecondPoint = bLeftFirst ? RightPoint : LeftPoint;
+		UAnimMontage* SecondMontage = bLeftFirst ? DodgeRightMontage : DodgeLeftMontage;
+		if (IsDodgePathClear(Feet, FirstPoint))
+		{
+			ChosenFeet = FirstPoint;
+			ChosenMontage = FirstMontage;
+		}
+		else if (IsDodgePathClear(Feet, SecondPoint))
+		{
+			ChosenFeet = SecondPoint;
+			ChosenMontage = SecondMontage;
+		}
+	}
+	if (!ChosenMontage)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-	DodgeTask->OnCancelled.AddDynamic(this, &UGA_EnemyDodge::OnDodgeCancelled);
-	DodgeTask->OnCompleted.AddDynamic(this, &UGA_EnemyDodge::OnDodgeFinished);
-	DodgeTask->OnInterrupted.AddDynamic(this, &UGA_EnemyDodge::OnDodgeCancelled);
-	DodgeTask->OnBlendOut.AddDynamic(this, &UGA_EnemyDodge::OnDodgeFinished);
+	if (!CommitAbility( Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	UAbilityTask_PlayMontageAndWait* ChosenMontageTask = nullptr;
+	ChosenMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, ChosenMontage);
+	if (!ChosenMontageTask)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+	
+	ChosenMontageTask->OnCancelled.AddDynamic(this, &UGA_EnemyDodge::OnDodgeCancelled);
+	ChosenMontageTask->OnCompleted.AddDynamic(this, &UGA_EnemyDodge::OnDodgeFinished);
+	ChosenMontageTask->OnInterrupted.AddDynamic(this, &UGA_EnemyDodge::OnDodgeCancelled);
+	ChosenMontageTask->OnBlendOut.AddDynamic(this, &UGA_EnemyDodge::OnDodgeFinished);
+	
+	FVector TargetPoint = ChosenFeet + (Avatar->GetActorLocation() - Feet);
 	UAbilityTask_ApplyRootMotionMoveToForce* DodgeMoveTask = UAbilityTask_ApplyRootMotionMoveToForce::ApplyRootMotionMoveToForce(this, NAME_None, TargetPoint, MoveDuration, false, MOVE_Walking, false, nullptr, ERootMotionFinishVelocityMode::SetVelocity, FVector::ZeroVector, 0.0f);
 	if (!DodgeMoveTask)
 	{
@@ -43,7 +87,7 @@ void UGA_EnemyDodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		return;
 	}
 	DodgeMoveTask->ReadyForActivation();
-	DodgeTask->ReadyForActivation();
+	ChosenMontageTask->ReadyForActivation();
 }
 
 void UGA_EnemyDodge::OnDodgeFinished()
@@ -54,4 +98,11 @@ void UGA_EnemyDodge::OnDodgeFinished()
 void UGA_EnemyDodge::OnDodgeCancelled()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+}
+// 헬퍼 함수 Start→End 경로가 내비메시 위로 열려 있는지 (NavigationRaycast 결과를 뒤집어 반환)
+bool UGA_EnemyDodge::IsDodgePathClear(const FVector& Start, const FVector& End) const
+{
+	FVector HitLocation;
+	
+	return !UNavigationSystemV1::NavigationRaycast(GetWorld(), Start,End,HitLocation);
 }
