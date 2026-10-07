@@ -3,14 +3,20 @@
 
 #include "GA_EnemyDodge.h"
 
+#include "MomentTriggerGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionMoveToForce.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "GameFramework/Character.h"
 #include "NavigationSystem.h"
 
+UGA_EnemyDodge::UGA_EnemyDodge()
+{
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+}
+
 void UGA_EnemyDodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-	const FGameplayEventData* TriggerEventData)
+                                     const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+                                     const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	
@@ -65,6 +71,18 @@ void UGA_EnemyDodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
+	float NowTime = GetWorld()->GetTimeSeconds();
+	if (NowTime - LastDodgeTime > ChainResetTime)
+	{
+		ChainCount = 0;
+	}
+	ChainCount++;
+	LastDodgeTime = NowTime;
+	if (ChainCount >= MaxChainCount)
+	{
+		ApplyDodgeChainCoolDown(Handle, ActorInfo, ActivationInfo);
+		ChainCount = 0;
+	}
 
 	UAbilityTask_PlayMontageAndWait* ChosenMontageTask = nullptr;
 	ChosenMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, ChosenMontage);
@@ -99,10 +117,29 @@ void UGA_EnemyDodge::OnDodgeCancelled()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }
+
 // 헬퍼 함수 Start→End 경로가 내비메시 위로 열려 있는지 (NavigationRaycast 결과를 뒤집어 반환)
 bool UGA_EnemyDodge::IsDodgePathClear(const FVector& Start, const FVector& End) const
 {
 	FVector HitLocation;
 	
 	return !UNavigationSystemV1::NavigationRaycast(GetWorld(), Start,End,HitLocation);
+}
+
+void UGA_EnemyDodge::ApplyDodgeChainCoolDown(const FGameplayAbilitySpecHandle Handle,
+                                             const FGameplayAbilityActorInfo* ActorInfo,
+                                             const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	UGameplayEffect* CooldownGE = GetCooldownGameplayEffect();
+	if (CooldownGE)
+	{
+		const FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(
+			CooldownGE->GetClass(), GetAbilityLevel());
+		if (SpecHandle.IsValid())
+		{
+			SpecHandle.Data->DynamicGrantedTags.AddTag(TAG_Cooldown_Enemy_Dodge_Chain);
+			SpecHandle.Data->SetSetByCallerMagnitude(TAG_Data_Cooldown, ChainCoolDownDuration);
+			ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+		}
+	}
 }
