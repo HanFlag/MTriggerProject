@@ -28,6 +28,8 @@ public:
 	bool bPlayerAlive = false;
 	UPROPERTY(EditAnywhere, Category = "Output")
 	FVector HomeLocation = FVector::ZeroVector;
+	UPROPERTY(EditAnywhere, Category = "Output")
+	float ClosingSpeed = 0.0f;
 
 };
 

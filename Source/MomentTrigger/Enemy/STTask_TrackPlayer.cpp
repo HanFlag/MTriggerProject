@@ -12,7 +12,7 @@ static void UpdateTrackPlayerData(FSTTask_TrackPlayerInstanceData& Data)
 	Data.PlayerActor = nullptr;
 	Data.DistanceToPlayer = 0.0f;
 	Data.bPlayerAlive = false;
-	
+	Data.ClosingSpeed = 0.0f;
 	if (!Data.Actor)
 	{
 		return;
@@ -24,6 +24,10 @@ static void UpdateTrackPlayerData(FSTTask_TrackPlayerInstanceData& Data)
 	}
 	Data.DistanceToPlayer = FVector::Dist2D(Data.Actor->GetActorLocation(), Player->GetActorLocation());
 	Data.PlayerActor = Player;
+	FVector Direction = (Data.Actor->GetActorLocation() - Player->GetActorLocation()).GetSafeNormal2D();
+	FVector PlayerSpeed = Player->GetVelocity();
+	PlayerSpeed.Z = 0.0f;
+	Data.ClosingSpeed = FVector::DotProduct(Direction,PlayerSpeed);
 	AMomentTriggerCharacter* PlayerCharacter = Cast<AMomentTriggerCharacter>(Player);
 	if (PlayerCharacter && !PlayerCharacter->bIsDead)
 	{
