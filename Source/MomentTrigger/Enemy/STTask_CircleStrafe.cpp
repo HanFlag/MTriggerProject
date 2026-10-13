@@ -2,9 +2,16 @@
 #include "STTask_CircleStrafe.h"
 #include "AIController.h"
 #include "StateTreeExecutionContext.h"
-#include "Navigation/PathFollowingComponent.h"
+#include "NavigationSystem.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+
+// Start→End 경로가 내비메시 위로 열려 있는지 (NavigationRaycast 결과를 뒤집어 반환)
+static bool IsStrafePathClear(UWorld* World, const FVector& Start, const FVector& End)
+{
+	FVector HitLocation;
+	return !UNavigationSystemV1::NavigationRaycast(World, Start, End, HitLocation);
+}
 
 FSTTask_CircleStrafe::FSTTask_CircleStrafe()
 {
@@ -29,6 +36,8 @@ EStateTreeRunStatus FSTTask_CircleStrafe::EnterState(FStateTreeExecutionContext&
 	Data.Duration = FMath::RandRange(Data.MinDuration, Data.MaxDuration);
 	Data.Elapsed = 0.0f;
 	Data.RepathTimer = 0.0f;
+	// 이전 상태에서 걸어 둔 MoveTo가 남아 있으면 이동 입력과 싸우므로 정리
+	Data.AIController->StopMovement();
 	ACharacter* Character = Cast<ACharacter>(Data.AIController->GetPawn());
 	// 현재 원래 속도 저장
 	if (Character && Character->GetCharacterMovement())
@@ -60,22 +69,31 @@ EStateTreeRunStatus FSTTask_CircleStrafe::Tick(FStateTreeExecutionContext& Conte
 	{
 		return EStateTreeRunStatus::Succeeded;
 	}
-	// RepathTimer 가 0 이하 일때 목표 거리를 다시 계산하여 해당 지점으로 이동
-	// 다시 Timer 새로고침
+	ACharacter* Character = Cast<ACharacter>(Data.AIController->GetPawn());
+	if (!Character)
+	{
+		return EStateTreeRunStatus::Failed;
+	}
+	// 매 틱 앞서가는 목표점 쪽으로 이동 입력만 넣는다 (MoveTo 재요청 시 생기던 끊김 제거)
+	FVector TargetLocation = Data.Target->GetActorLocation();
+	FVector BossLocation = Character->GetActorLocation();
+	FVector Direction = (BossLocation - TargetLocation).GetSafeNormal2D();
+	FVector Rotate = Direction.RotateAngleAxis(Data.Dir * Data.LeadAngle, FVector::UpVector);
+	FVector Goal = TargetLocation + Rotate * Data.Radius;
+	FVector MoveDir = (Goal - BossLocation).GetSafeNormal2D();
+	Character->AddMovementInput(MoveDir, 1.0f);
+
+	// RepathInterval 마다 진행 방향 앞쪽이 막혔는지 검사, 막혔으면 반대로 돈다
 	if (Data.RepathTimer <= 0.0f)
 	{
-		FVector TargetLocation = Data.Target->GetActorLocation();
-		FVector BossLocation = Data.AIController->GetPawn()->GetActorLocation();
-		FVector Direction = (BossLocation - TargetLocation).GetSafeNormal2D();
-		FVector Rotate = Direction.RotateAngleAxis(Data.Dir * Data.LeadAngle, FVector::UpVector);
-		EPathFollowingRequestResult::Type Result = Data.AIController->MoveToLocation(TargetLocation + Rotate *Data.Radius, Data.AcceptanceRadius, true, true, true, true);
-		Data.RepathTimer = Data.RepathInterval;
-		if (EPathFollowingRequestResult::Failed == Result)
+		FVector Feet = Character->GetNavAgentLocation();
+		FVector Ahead = Feet + MoveDir * Data.LookAheadDistance;
+		if (!IsStrafePathClear(Character->GetWorld(), Feet, Ahead))
 		{
 			Data.Dir = -Data.Dir;
 		}
+		Data.RepathTimer = Data.RepathInterval;
 	}
-	ACharacter* Character = Cast<ACharacter>(Data.AIController->GetPawn());
 	// 속도를 보간하여 Strafe 속도에 맞게 min~max 속도 보간 매 틱 속도 호출
 	if (Character && Character->GetCharacterMovement())
 	{

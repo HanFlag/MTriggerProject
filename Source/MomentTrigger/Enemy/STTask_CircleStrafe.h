@@ -26,9 +26,9 @@ public:
 	float MaxDuration = 4.0f;
 	UPROPERTY(EditAnywhere, Category = "Parameter")
 	float RepathInterval = 0.25f;
-	//허용반경
+	// 진행 방향 앞쪽 벽 검사 거리
 	UPROPERTY(EditAnywhere, Category = "Parameter")
-	float AcceptanceRadius = 50.0f;
+	float LookAheadDistance = 200.0f;
 	UPROPERTY(EditAnywhere, Category = "Parameter")
 	float MinStrafeSpeed = 60.0f;
 	UPROPERTY(EditAnywhere, Category = "Parameter")
